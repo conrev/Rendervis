@@ -11,7 +11,7 @@ bool gQuit = false;
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 640;
-unsigned int VBO, VAO, shaderProgram;
+unsigned int pVBO, cVBO, VAO, shaderProgram;
 
 GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f,
@@ -133,7 +133,7 @@ bool setupShader()
         return success;
     }
 
-    std::string fragmentShaderSource = loadShaderFromFile("/shaders/frag.glsl");
+    std::string fragmentShaderSource = loadShaderFromFile("../shaders/frag.glsl");
     const char *fragmentShaderSrc = fragmentShaderSource.c_str();
 
     unsigned int fragmentShader;
@@ -142,12 +142,12 @@ bool setupShader()
     glShaderSource(fragmentShader, 1, &fragmentShaderSrc, NULL);
     glCompileShader(fragmentShader);
 
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
         return success;
     }
@@ -168,23 +168,34 @@ void preDraw()
 {
     // VAO stores pointers to VBO to potentially swap many different VBOs
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &pVBO);
+    glGenBuffers(1, &cVBO);
 
     // bind the vertex array
     glBindVertexArray(VAO);
     // The array buffer is now bounded to our VBO
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, pVBO);
 
     // the VBO now has data, our vertices array
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // tell opengl how to interpret our bounded array buffer, aka the VBO
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+
+    // setup second vbo for colors
+    glBindBuffer(GL_ARRAY_BUFFER, cVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+    // tell opengl how to interpret our bounded array buffer, aka the VBO
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 }
 
 void draw()
@@ -215,7 +226,9 @@ void cleanUp()
 {
 
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &pVBO);
+    glDeleteBuffers(1, &cVBO);
+
     glDeleteProgram(shaderProgram);
 
     SDL_DestroyWindow(gWindow);
