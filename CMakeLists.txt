@@ -6,4 +6,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(external)
 add_executable(${PROJECT_NAME} main.cpp)
-target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static )
+target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static)
