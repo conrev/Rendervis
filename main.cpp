@@ -2,6 +2,8 @@
 #include <SDL2/SDL.h>
 #include <memory>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 SDL_Window *gWindow = NULL;
 SDL_GLContext gGLContext = NULL;
@@ -14,11 +16,31 @@ unsigned int VBO, VAO, shaderProgram;
 GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f,
     0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f
+    0.0f, 0.5f, 0.0f};
 
-};
+GLfloat colors[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f};
 
 bool setupShader();
+std::string loadShaderFromFile(const std::string &filename)
+{
+    std::string result = "";
+
+    std::string line = "";
+    std::ifstream file(filename.c_str());
+    if (file.is_open())
+    {
+        while (std::getline(file, line))
+        {
+            result += line + '\n';
+        }
+        file.close();
+    }
+
+    return result;
+}
 
 bool init()
 {
@@ -92,17 +114,13 @@ bool setupShader()
     int success;
     char infoLog[512];
 
-    const char *vertexShaderSource = "#version 330 core\n"
-                                     "layout (location = 0) in vec3 aPos;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                     "}\0";
+    std::string vertexShaderSource = loadShaderFromFile("../shaders/vert.glsl");
+    const char *vertexShaderSrc = vertexShaderSource.c_str();
 
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
     glCompileShader(vertexShader);
 
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -115,17 +133,13 @@ bool setupShader()
         return success;
     }
 
-    const char *fragmentShaderSource = "#version 330 core\n"
-                                       "out vec4 FragColor;\n"
-                                       "void main()\n"
-                                       "{\n"
-                                       "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-                                       "}\n";
+    std::string fragmentShaderSource = loadShaderFromFile("/shaders/frag.glsl");
+    const char *fragmentShaderSrc = fragmentShaderSource.c_str();
 
     unsigned int fragmentShader;
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSrc, NULL);
     glCompileShader(fragmentShader);
 
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -170,6 +184,7 @@ void preDraw()
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glDisableVertexAttribArray(0);
 }
 
 void draw()
@@ -178,7 +193,7 @@ void draw()
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_POINTS, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void engineLoop()
