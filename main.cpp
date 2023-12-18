@@ -12,6 +12,7 @@ bool gQuit = false;
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 640;
 unsigned int VBO, VAO, EBO, shaderProgram;
+float cycledColor[4]{1.0f, 0.0f, 0.0f, 1.0f};
 
 GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f, // p0
@@ -209,10 +210,15 @@ void preDraw()
 
 void draw()
 {
+    uint64_t time_elapsed = SDL_GetTicks64();
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    cycledColor[0] = (sin((float)time_elapsed / 100) / 2.0f) + 0.5;
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "cycledColor");
     glUseProgram(shaderProgram);
+    glUniform4fv(vertexColorLocation, 1, cycledColor);
     glBindVertexArray(VAO);
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
