@@ -356,7 +356,7 @@ void draw()
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void engineLoop()
