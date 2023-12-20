@@ -1,11 +1,14 @@
 #version 330
 
 in vec4 vertColor;
+in vec2 vertUV;
 out vec4 FragColor;
 
-uniform vec4 cycledColor;
+
+uniform sampler2D textureData;
 
 void main()
 {
-    FragColor = cycledColor;
+    FragColor = texture2D(textureData, vertUV);
+
 }

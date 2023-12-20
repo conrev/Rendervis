@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.19 )
 
 project(Rendervis)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(external)
@@ -16,5 +16,5 @@ add_custom_command(
          COMMENT "Copying shaders" VERBATIM
          )
 
-target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static)
+target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static stb_image)
 

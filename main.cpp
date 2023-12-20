@@ -1,9 +1,11 @@
-#include <glad/glad.h>
-#include <SDL2/SDL.h>
 #include <memory>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <string>
+#include <glad/glad.h>
+#include <SDL2/SDL.h>
+#include <stb_image.h>
 
 SDL_Window *gWindow = NULL;
 SDL_GLContext gGLContext = NULL;
@@ -11,18 +13,21 @@ bool gQuit = false;
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 640;
-unsigned int VBO, VAO, EBO, shaderProgram;
-float cycledColor[4]{1.0f, 0.0f, 0.0f, 1.0f};
+unsigned int VBO, VAO, EBO, shaderProgram, texture;
 
 GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f, // p0
     1.0f, 0.0f, 0.0f,   // c0
-    0.5f, -0.5f, 0.0f,  // p1
-    0.0f, 1.0f, 0.0f,   // c1
-    -0.5f, 0.5f, 0.0f,  // p2
-    0.0f, 0.0f, 1.0f,   // c2
-    0.5f, 0.5f, 0.0f,   // p3
-    0.0f, 0.0f, 1.0f    // c3
+    0.0f, 0.0f,
+    0.5f, -0.5f, 0.0f, // p1
+    0.0f, 1.0f, 0.0f,  // c1
+    1.0f, 0.0f,
+    -0.5f, 0.5f, 0.0f, // p2
+    0.0f, 0.0f, 1.0f,  // c2
+    0.0f, 1.0f,
+    0.5f, 0.5f, 0.0f, // p3
+    0.0f, 0.0f, 1.0f, // c3
+    1.0f, 1.0f
 
 };
 
@@ -32,13 +37,114 @@ GLuint indices[] = {
     1, 3, 2  // second triangle
 };
 
+GLubyte *textureData;
+int textureWidth, textureHeight;
 bool setupShader();
+
+void glDebugOutput(GLenum source,
+                   GLenum type,
+                   unsigned int id,
+                   GLenum severity,
+                   GLsizei length,
+                   const char *message,
+                   const void *userParam)
+{
+    // ignore non-significant error/warning codes
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return;
+
+    std::cout << "---------------" << std::endl;
+    std::cout << "Debug message (" << id << "): " << message << std::endl;
+
+    switch (source)
+    {
+    case GL_DEBUG_SOURCE_API:
+        std::cout << "Source: API";
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        std::cout << "Source: Window System";
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        std::cout << "Source: Shader Compiler";
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        std::cout << "Source: Third Party";
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        std::cout << "Source: Application";
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        std::cout << "Source: Other";
+        break;
+    }
+    std::cout << std::endl;
+
+    switch (type)
+    {
+    case GL_DEBUG_TYPE_ERROR:
+        std::cout << "Type: Error";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        std::cout << "Type: Deprecated Behaviour";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        std::cout << "Type: Undefined Behaviour";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        std::cout << "Type: Portability";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        std::cout << "Type: Performance";
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        std::cout << "Type: Marker";
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        std::cout << "Type: Push Group";
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        std::cout << "Type: Pop Group";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        std::cout << "Type: Other";
+        break;
+    }
+    std::cout << std::endl;
+
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_HIGH:
+        std::cout << "Severity: high";
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        std::cout << "Severity: medium";
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        std::cout << "Severity: low";
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        std::cout << "Severity: notification";
+        break;
+    }
+    std::cout << std::endl;
+    std::cout << std::endl;
+}
+
+unsigned char *loadTextures(const std::string &filename, int &width, int &height)
+{
+    int _;
+    unsigned char *data = stbi_load(filename.c_str(), &textureWidth, &textureHeight, &_, 0);
+
+    return data;
+}
+
 std::string loadShaderFromFile(const std::string &filename)
 {
     std::string result = "";
 
     std::string line = "";
     std::ifstream file(filename.c_str());
+
     if (file.is_open())
     {
         while (std::getline(file, line))
@@ -47,7 +153,10 @@ std::string loadShaderFromFile(const std::string &filename)
         }
         file.close();
     }
-
+    else
+    {
+        std::cout << "Failed to Open File" << errno << std::endl;
+    }
     return result;
 }
 
@@ -94,6 +203,9 @@ bool init()
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     glEnable(GL_CULL_FACE);
 
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(glDebugOutput, 0);
+
     // setupShader
     if (!setupShader())
     {
@@ -124,7 +236,7 @@ bool setupShader()
     int success;
     char infoLog[512];
 
-    std::string vertexShaderSource = loadShaderFromFile("./shaders/vert.glsl");
+    std::string vertexShaderSource = loadShaderFromFile("../shaders/vert.glsl");
     const char *vertexShaderSrc = vertexShaderSource.c_str();
 
     unsigned int vertexShader;
@@ -143,7 +255,7 @@ bool setupShader()
         return success;
     }
 
-    std::string fragmentShaderSource = loadShaderFromFile("./shaders/frag.glsl");
+    std::string fragmentShaderSource = loadShaderFromFile("../shaders/frag.glsl");
     const char *fragmentShaderSrc = fragmentShaderSource.c_str();
 
     unsigned int fragmentShader;
@@ -171,6 +283,13 @@ bool setupShader()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    textureData = loadTextures("../resources/textures/sample-texture.jpg", textureWidth, textureHeight);
+    if (textureData == nullptr)
+    {
+        std::cout << "ERROR::TEXTURE::LOAD_FAILED\n";
+        return false;
+    }
+
     return true;
 }
 
@@ -195,41 +314,59 @@ void preDraw()
     // put the data in
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
     // tell opengl how to interpret our bounded array buffer, aka the VBO
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
 
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
 
+    // VAO attribute for textures
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // setup textures object
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // unbind everything to ensure we dont accidentally run anything
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void draw()
 {
-    uint64_t time_elapsed = SDL_GetTicks64();
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    cycledColor[0] = (sin((float)time_elapsed / 100) / 2.0f) + 0.5;
-    int vertexColorLocation = glGetUniformLocation(shaderProgram, "cycledColor");
+    glBindTexture(GL_TEXTURE_2D, texture);
     glUseProgram(shaderProgram);
-    glUniform4fv(vertexColorLocation, 1, cycledColor);
     glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_INT, 0);
 }
 
 void engineLoop()
 {
 
+    preDraw();
+
     while (!gQuit)
     {
         input();
-
-        preDraw();
 
         draw();
         // Swap front to back buffer
@@ -244,7 +381,7 @@ void cleanUp()
     glDeleteBuffers(1, &VBO);
 
     glDeleteProgram(shaderProgram);
-
+    stbi_image_free(textureData);
     SDL_DestroyWindow(gWindow);
 
     SDL_Quit();
