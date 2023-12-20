@@ -13,3 +13,7 @@ add_subdirectory(SDL)
 set(STB_PATH ${CMAKE_SOURCE_DIR}/external/stb_image)
 add_library(stb_image ${STB_PATH}/stb_image.cpp)
 target_include_directories(stb_image PUBLIC ${STB_PATH}/include/)
+
+# setup GLM
+
+add_subdirectory(glm)
