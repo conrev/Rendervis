@@ -6,6 +6,9 @@
 #include <glad/glad.h>
 #include <SDL2/SDL.h>
 #include <stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 SDL_Window *gWindow = NULL;
 SDL_GLContext gGLContext = NULL;
@@ -15,27 +18,23 @@ int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 640;
 unsigned int VBO, VAO, EBO, shaderProgram, texture;
 
-GLfloat vertices[] = {
-    -0.5f, -0.5f, 0.0f, // p0
-    1.0f, 0.0f, 0.0f,   // c0
-    0.0f, 0.0f,
-    0.5f, -0.5f, 0.0f, // p1
-    0.0f, 1.0f, 0.0f,  // c1
-    1.0f, 0.0f,
-    -0.5f, 0.5f, 0.0f, // p2
-    0.0f, 0.0f, 1.0f,  // c2
-    0.0f, 1.0f,
-    0.5f, 0.5f, 0.0f, // p3
-    0.0f, 0.0f, 1.0f, // c3
-    1.0f, 1.0f
+GLfloat vertices[] =
+    { //     COORDINATES     /        COLORS      /   TexCoord  //
+        -0.5f, 0.0f, 0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
+        -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
+        0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
+        0.5f, 0.0f, 0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
+        0.0f, 0.8f, 0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f};
 
-};
-
-GLuint indices[] = {
-    // note that we start from 0!
-    0, 1, 2, // first triangle
-    1, 3, 2  // second triangle
-};
+// Indices for vertices order
+GLuint indices[] =
+    {
+        0, 1, 2,
+        0, 2, 3,
+        0, 1, 4,
+        1, 2, 4,
+        2, 3, 4,
+        3, 0, 4};
 
 GLubyte *textureData;
 int textureWidth, textureHeight;
@@ -201,7 +200,8 @@ bool init()
     }
     // initialize glViewport
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(glDebugOutput, 0);
@@ -350,13 +350,30 @@ void preDraw()
 
 void draw()
 {
+
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    transform = glm::rotate(transform, float(SDL_GetTicks64()) / 1000.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
+
+    unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transformMatrix");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "viewMatrix");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
 
 void engineLoop()

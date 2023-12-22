@@ -16,5 +16,5 @@ add_custom_command(
          COMMENT "Copying shaders" VERBATIM
          )
 
-target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static stb_image)
+target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static stb_image glm::glm)
 
