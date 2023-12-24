@@ -8,14 +8,17 @@
 #include <stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 640;
+const float CAMERA_SPEED = 0.01f;
 
 SDL_Window *gWindow = NULL;
 SDL_GLContext gGLContext = NULL;
 bool gQuit = false;
 
-int SCREEN_WIDTH = 800;
-int SCREEN_HEIGHT = 640;
 unsigned int VBO, VAO, EBO, shaderProgram, texture;
 
 GLfloat vertices[] =
@@ -38,6 +41,13 @@ GLuint indices[] =
 
 GLubyte *textureData;
 int textureWidth, textureHeight;
+glm::vec3 cameraPosition = glm::vec3(0.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraRight = glm::normalize(glm::cross(cameraUp, cameraTarget));
+
+bool isClicked = false;
+
 bool setupShader();
 
 void glDebugOutput(GLenum source,
@@ -226,6 +236,49 @@ void input()
         {
             gQuit = true;
         }
+        if (evt.type == SDL_KEYDOWN)
+        {
+            Uint8 const *keys = SDL_GetKeyboardState(nullptr);
+            if (keys[SDL_SCANCODE_W] == 1)
+                cameraPosition += cameraTarget * CAMERA_SPEED;
+            if (keys[SDL_SCANCODE_S] == 1)
+                cameraPosition -= cameraTarget * CAMERA_SPEED;
+            if (keys[SDL_SCANCODE_A] == 1)
+                cameraPosition -= cameraRight * CAMERA_SPEED;
+            if (keys[SDL_SCANCODE_D] == 1)
+                cameraPosition += cameraRight * CAMERA_SPEED;
+        }
+        if (evt.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if (evt.button.button == SDL_BUTTON_RIGHT)
+            {
+                isClicked = true;
+                // SDL_WarpMouseInWindow(gWindow, 0, 0);
+                std::cout << "disable cursor : " << SDL_ShowCursor(SDL_FALSE) << std::endl;
+                // SDL_SetRelativeMouseMode(SDL_TRUE);
+            }
+        }
+        if (evt.type == SDL_MOUSEBUTTONUP)
+        {
+            if (evt.button.button == SDL_BUTTON_RIGHT)
+            {
+                isClicked = false;
+                // SDL_WarpMouseInWindow(gWindow, 0, 0);
+                std::cout << "Re enabled cursor : " << SDL_ShowCursor(SDL_ENABLE) << std::endl;
+                // SDL_SetRelativeMouseMode(SDL_FALSE);
+            }
+        }
+        if (evt.type == SDL_MOUSEMOTION)
+        {
+            if (!isClicked)
+                return;
+
+            // std::cout << evt.motion.xrel << " " << evt.motion.yrel << std::endl;
+            cameraTarget = glm::normalize(glm::rotate(cameraTarget, glm::radians(evt.motion.yrel * -0.1f), glm::normalize(glm::cross(cameraTarget, cameraUp))));
+            cameraTarget = glm::normalize(glm::rotate(cameraTarget, glm::radians(evt.motion.xrel * -0.1f), cameraUp));
+
+            cameraRight = glm::normalize(glm::cross(cameraTarget, cameraUp));
+        }
     }
 }
 
@@ -358,10 +411,9 @@ void draw()
     glBindVertexArray(VAO);
 
     glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    transform = glm::rotate(transform, float(SDL_GetTicks64()) / 1000.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    // transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    // transform = glm::rotate(transform, float(SDL_GetTicks64()) / 1000.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
 
     unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transformMatrix");
