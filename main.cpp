@@ -50,7 +50,7 @@ bool isClicked = false;
 
 bool setupShader();
 
-void glDebugOutput(GLenum source,
+void APIENTRY glDebugOutput(GLenum source,
                    GLenum type,
                    unsigned int id,
                    GLenum severity,
@@ -289,7 +289,7 @@ bool setupShader()
     int success;
     char infoLog[512];
 
-    std::string vertexShaderSource = loadShaderFromFile("../shaders/vert.glsl");
+    std::string vertexShaderSource = loadShaderFromFile("./resources/shaders/vert.glsl");
     const char *vertexShaderSrc = vertexShaderSource.c_str();
 
     unsigned int vertexShader;
@@ -308,7 +308,7 @@ bool setupShader()
         return success;
     }
 
-    std::string fragmentShaderSource = loadShaderFromFile("../shaders/frag.glsl");
+    std::string fragmentShaderSource = loadShaderFromFile("./resources/shaders/frag.glsl");
     const char *fragmentShaderSrc = fragmentShaderSource.c_str();
 
     unsigned int fragmentShader;
@@ -336,7 +336,7 @@ bool setupShader()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    textureData = loadTextures("../resources/textures/sample-texture.jpg", textureWidth, textureHeight);
+    textureData = loadTextures("./resources/textures/sample-texture.jpg", textureWidth, textureHeight);
     if (textureData == nullptr)
     {
         std::cout << "ERROR::TEXTURE::LOAD_FAILED\n";
@@ -456,7 +456,7 @@ void cleanUp()
     SDL_Quit();
 }
 
-int main()
+int main(int argv, char** args)
 {
     int initState = init();
 

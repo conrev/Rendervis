@@ -1,5 +1,6 @@
 CMakeLists.txt.user
 CMakeCache.txt
+CMakeSettings.json
 CMakeFiles
 CMakeScripts
 Testing
@@ -12,3 +13,4 @@ _deps
 
 build/
 .vscode/
+.vs/
