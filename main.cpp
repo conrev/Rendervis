@@ -10,45 +10,66 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 640;
-const float CAMERA_SPEED = 0.01f;
+const float CAMERA_SPEED = 0.02f;
 
 SDL_Window *gWindow = NULL;
 SDL_GLContext gGLContext = NULL;
 bool gQuit = false;
 
-unsigned int VBO, VAO, EBO, shaderProgram, texture;
+unsigned int VBO, VAO, EBO, objectShader, texture;
+unsigned int lightVAO, lightShader;
 
+
+// Vertices coordinates
 GLfloat vertices[] =
-    { //     COORDINATES     /        COLORS      /   TexCoord  //
-        -0.5f, 0.0f, 0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
-        -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
-        0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
-        0.5f, 0.0f, 0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
-        0.0f, 0.8f, 0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f};
+{ //     COORDINATES     /        COLORS          /    TexCoord   /        NORMALS       //
+    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+
+    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+
+    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+
+     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
+     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
+     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.8f, 0.5f,  0.0f, // Right side
+
+     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
+    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
+     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f,  0.8f  // Facing side
+};
 
 // Indices for vertices order
 GLuint indices[] =
-    {
-        0, 1, 2,
-        0, 2, 3,
-        0, 1, 4,
-        1, 2, 4,
-        2, 3, 4,
-        3, 0, 4};
-
+{
+    0, 1, 2, // Bottom side
+    0, 2, 3, // Bottom side
+    4, 6, 5, // Left side
+    7, 9, 8, // Non-facing side
+    10, 12, 11, // Right side
+    13, 15, 14 // Facing side
+};
 GLubyte *textureData;
 int textureWidth, textureHeight;
-glm::vec3 cameraPosition = glm::vec3(0.0f);
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 lightPosition = glm::vec3(1.0f, 1.0f, -1.0f);
+glm::vec3 lightColor = glm::vec3(1.0f);
+glm::vec3 cameraPosition = glm::vec3(-1.267125, 1.771229, 3.434664);
+glm::vec3 cameraTarget = glm::vec3(0.328121, -0.207912, -0.921471);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraRight = glm::normalize(glm::cross(cameraUp, cameraTarget));
+glm::vec3 cameraRight = glm::normalize(glm::cross(cameraTarget, cameraUp));
 
 bool isClicked = false;
 
-bool setupShader();
 
 void APIENTRY glDebugOutput(GLenum source,
                    GLenum type,
@@ -216,13 +237,6 @@ bool init()
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(glDebugOutput, 0);
 
-    // setupShader
-    if (!setupShader())
-    {
-        std::cout << "Failed to setup Shader" << std::endl;
-        return false;
-    };
-
     return true;
 }
 
@@ -247,6 +261,7 @@ void input()
                 cameraPosition -= cameraRight * CAMERA_SPEED;
             if (keys[SDL_SCANCODE_D] == 1)
                 cameraPosition += cameraRight * CAMERA_SPEED;
+            
         }
         if (evt.type == SDL_MOUSEBUTTONDOWN)
         {
@@ -278,18 +293,19 @@ void input()
             cameraTarget = glm::normalize(glm::rotate(cameraTarget, glm::radians(evt.motion.xrel * -0.1f), cameraUp));
 
             cameraRight = glm::normalize(glm::cross(cameraTarget, cameraUp));
+
+            //std::cout << glm::to_string(cameraTarget) << std::endl;
         }
     }
 }
 
-bool setupShader()
+bool setupShader(const std::string& vertexPath, const std::string& fragmentPath, unsigned int& shaderProgram)
 {
-
     // shader debuggers
     int success;
     char infoLog[512];
 
-    std::string vertexShaderSource = loadShaderFromFile("./resources/shaders/vert.glsl");
+    std::string vertexShaderSource = loadShaderFromFile(vertexPath);
     const char *vertexShaderSrc = vertexShaderSource.c_str();
 
     unsigned int vertexShader;
@@ -308,7 +324,7 @@ bool setupShader()
         return success;
     }
 
-    std::string fragmentShaderSource = loadShaderFromFile("./resources/shaders/frag.glsl");
+    std::string fragmentShaderSource = loadShaderFromFile(fragmentPath);
     const char *fragmentShaderSrc = fragmentShaderSource.c_str();
 
     unsigned int fragmentShader;
@@ -336,18 +352,18 @@ bool setupShader()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    textureData = loadTextures("./resources/textures/sample-texture.jpg", textureWidth, textureHeight);
-    if (textureData == nullptr)
-    {
-        std::cout << "ERROR::TEXTURE::LOAD_FAILED\n";
-        return false;
-    }
 
     return true;
 }
 
-void preDraw()
-{
+
+
+void preDrawObject() {
+    // setupShader
+
+    if (!setupShader("./resources/shaders/phongVert.glsl","resources/shaders/phongFrag.glsl", objectShader))
+        return;
+
     // VAO stores pointers to VBO to potentially swap many different VBOs
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -368,16 +384,28 @@ void preDraw()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // tell opengl how to interpret our bounded array buffer, aka the VBO
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     // VAO attribute for textures
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(8 * sizeof(float)));
+    glEnableVertexAttribArray(3);
+
+    // load textures
+
+    textureData = loadTextures("./resources/textures/sample-texture.jpg", textureWidth, textureHeight);
+    if (textureData == nullptr)
+    {
+        std::cout << "ERROR::TEXTURE::LOAD_FAILED\n";
+        return;
+    }
     // setup textures object
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -401,29 +429,96 @@ void preDraw()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void draw()
+void preDrawLights() {
+    if (!setupShader("./resources/shaders/lightVert.glsl", "resources/shaders/lightFrag.glsl", lightShader))
+        return;
+
+    // VAO stores pointers to VBO to potentially swap many different VBOs
+    glGenVertexArrays(1, &lightVAO);
+
+    // bind the vertex array
+    glBindVertexArray(lightVAO);
+    // The array buffer is now bounded to our VBO
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // bind array element buffer to our EBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    // tell opengl how to interpret our bounded array buffer, aka the VBO
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // VAO attribute for textures
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
+    // unbind everything to ensure we dont accidentally run anything
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDisableVertexAttribArray(0);
+}
+
+
+void drawObject()
 {
 
-    glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(shaderProgram);
+    glUseProgram(objectShader);
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
 
     glm::mat4 transform = glm::mat4(1.0f);
-    // transform = glm::rotate(transform, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    // transform = glm::rotate(transform, float(SDL_GetTicks64()) / 1000.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
 
-    unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transformMatrix");
+    unsigned int transformLoc = glGetUniformLocation(objectShader, "transformMatrix");
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "viewMatrix");
+    unsigned int viewLoc = glGetUniformLocation(objectShader, "viewMatrix");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projectionMatrix");
+    unsigned int projectionLoc = glGetUniformLocation(objectShader, "projectionMatrix");
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    unsigned int lightColorLoc = glGetUniformLocation(objectShader, "lightColor");
+    glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
+
+    unsigned int lightPositionLoc = glGetUniformLocation(objectShader, "lightPosition");
+    glUniform3fv(lightPositionLoc, 1, glm::value_ptr(lightPosition));
+
+    unsigned int viewPositionLoc = glGetUniformLocation(objectShader, "viewPosition");
+    glUniform3fv(viewPositionLoc, 1, glm::value_ptr(cameraPosition));
+
+
+    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+}
+
+void drawLights() {
+    glUseProgram(lightShader);
+    glBindVertexArray(lightVAO);
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, glm::vec3(lightPosition));
+    transform = glm::scale(transform, glm::vec3(0.2f));
+    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraTarget, cameraUp);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
+
+    unsigned int transformLoc = glGetUniformLocation(lightShader, "transformMatrix");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+    unsigned int viewLoc = glGetUniformLocation(lightShader, "viewMatrix");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+    unsigned int projectionLoc = glGetUniformLocation(lightShader, "projectionMatrix");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+
+    unsigned int lightColorLoc = glGetUniformLocation(lightShader, "lightColor");
+    glUniform3fv(lightColorLoc, 1, glm::value_ptr(lightColor));
+
 
     glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
@@ -431,13 +526,15 @@ void draw()
 void engineLoop()
 {
 
-    preDraw();
-
     while (!gQuit)
     {
         input();
 
-        draw();
+        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        drawLights();
+        drawObject();
         // Swap front to back buffer
         SDL_GL_SwapWindow(gWindow);
     }
@@ -448,8 +545,11 @@ void cleanUp()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &lightVAO);
 
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(objectShader);
+    glDeleteProgram(lightShader);
     stbi_image_free(textureData);
     SDL_DestroyWindow(gWindow);
 
@@ -463,6 +563,9 @@ int main(int argv, char** args)
     if (!initState)
         return 1;
 
+
+    preDrawObject();
+    preDrawLights();
     engineLoop();
     cleanUp();
 
