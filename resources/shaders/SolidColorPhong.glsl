@@ -10,15 +10,14 @@ out vec4 FragColor;
 uniform vec3 lightColor;
 uniform vec3 viewPosition;
 uniform vec3 lightPosition;
-uniform sampler2D textureData;
 
 void main()
 {
     float ambientStrength = 0.2f;
-    float specularStrength = 0.8f;
+    float specularStrength = 0.2f;
 
     vec3 ambientLuminance = ambientStrength * lightColor;
-    vec4 objectColor = texture2D(textureData, vertUV);
+    vec4 objectColor = vertColor;
 
     vec3 normalizedNormal = normalize(worldNormal);
     vec3 lightDir = normalize(lightPosition - worldPos);
