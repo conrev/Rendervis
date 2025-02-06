@@ -5,7 +5,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(external)
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME} 
+PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/main.cc 
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/core/Application.cc
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/core/Camera.cc
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/core/Scene.cc
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/Shader.cc
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/Entity.cc
+)
 
 # copy shaders to build
 
@@ -23,3 +32,7 @@ add_custom_target(copy_resource ALL
 
 target_link_libraries(${PROJECT_NAME} glad SDL2::SDL2main SDL2::SDL2-static stb_image glm::glm)
 
+target_include_directories(${PROJECT_NAME}
+PRIVATE  
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)

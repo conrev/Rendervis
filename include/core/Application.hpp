@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "core/Scene.hpp"
+
 namespace Rendervis {
 
     struct AppProperties {
@@ -24,6 +26,7 @@ namespace Rendervis {
         bool Init();
         void Run();
         void Close();
+        float AspectRatio() const;
 
     public:
         virtual void OnInput();
@@ -35,6 +38,7 @@ namespace Rendervis {
         AppProperties app_setting_;
         SDL_GLContext gl_context_{};
         bool running_{};
+        std::shared_ptr<Scene> active_scene_{};
     };
 
 }  // namespace Rendervis
