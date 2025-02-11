@@ -216,17 +216,19 @@ namespace Rendervis {
 
     void Application::Run() {
         if (!Application::Init()) return;
-
+        uint64_t last_frame = 0;
         running_ = true;
-        float dt = 0.01667;  // hack
         while (running_) {
-            uint64_t start = SDL_GetPerformanceCounter();
+            uint64_t current = SDL_GetPerformanceCounter();
+            float dt = (double)((current - last_frame) / (double)SDL_GetPerformanceFrequency());
+            last_frame = current;
+
+            // std::cout << "Current DeltaTime: " << std::to_string(dt) << std::endl;
+            // std::cout << "Current FPS: " << std::to_string(1.0f / dt) << std::endl;
+
             Application::OnInput(dt);
             Application::OnUpdate(dt);
             uint64_t end = SDL_GetPerformanceCounter();
-
-            float dt = (end - start) / (float)SDL_GetPerformanceFrequency();
-            // std::cout << "Current FPS: " << std::to_string(1.0f / dt) << std::endl;
 
             // Swap front to back buffer
             SDL_GL_SwapWindow(window_);
@@ -261,7 +263,7 @@ namespace Rendervis {
             if (evt.type == SDL_MOUSEMOTION) {
                 if (!is_clicked) continue;
 
-                active_scene_->MainCamera()->Rotate(glm::vec3(-evt.motion.xrel, -evt.motion.yrel, 0), dt, 5);
+                active_scene_->MainCamera()->Rotate(glm::vec3(-evt.motion.xrel, -evt.motion.yrel, 0), dt, 5.0f);
             }
         }
 
