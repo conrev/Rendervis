@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "core/Transform.hpp"
 #include "renderer/Shader.hpp"
 
 namespace Rendervis {
@@ -23,7 +24,7 @@ namespace Rendervis {
         ~Entity();
 
     public:
-        void Draw(std::shared_ptr<Shader> render_shader);
+        void Draw(std::shared_ptr<Shader> render_shader, Transform transform);
 
     private:
         std::vector<float> vertex_data_;

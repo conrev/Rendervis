@@ -1,4 +1,4 @@
-#infndef RENDERER_H
+#ifndef RENDERER_H
 #define RENDERER_H
 
 namespace Rendervis {

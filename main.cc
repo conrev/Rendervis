@@ -5,9 +5,8 @@ int main(int argv, char **args) {
     prop.window_name = "Rendervis App";
     prop.window_width = 800;
     prop.window_height = 640;
-    std::unique_ptr<Rendervis::Application> app;
-    app = std::make_unique<Rendervis::Application>(prop);
-    app->Run();
+    Rendervis::Application app{prop};
+    app.Run();
 
     return 0;
 }

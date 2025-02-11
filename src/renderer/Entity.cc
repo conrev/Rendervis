@@ -22,17 +22,19 @@ namespace Rendervis {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data.size() * sizeof(GLuint), index_data.data(), GL_STATIC_DRAW);
 
         // tell opengl how to interpret our bounded array buffer, aka the VBO
-
+        // Position
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(0);
 
+        // Color
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        // VAO attribute for textures
+        // VAO attribute for UV
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
 
+        // Normals
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void *)(8 * sizeof(float)));
         glEnableVertexAttribArray(3);
 
@@ -49,10 +51,11 @@ namespace Rendervis {
         glDeleteBuffers(1, &ebo_id_);
     }
 
-    void Entity::Draw(std::shared_ptr<Shader> render_shader) {
+    void Entity::Draw(std::shared_ptr<Shader> render_shader, Transform transform) {
         render_shader->Bind();
         glBindVertexArray(vao_id_);
 
+        render_shader->SetUniformMat4("transformMatrix", transform.GetTransformationMatrix());
         glDrawElements(GL_TRIANGLES, sizeof(vertex_data_), GL_UNSIGNED_INT, 0);
     }
 

@@ -29,9 +29,9 @@ namespace Rendervis {
         float AspectRatio() const;
 
     public:
-        virtual void OnInput();
-        virtual void OnGUI();
-        virtual void OnUpdate();
+        virtual void OnInput(float dt);
+        virtual void OnGUI(float dt);
+        virtual void OnUpdate(float dt);
 
     private:
         SDL_Window* window_{};

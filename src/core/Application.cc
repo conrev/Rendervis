@@ -218,18 +218,24 @@ namespace Rendervis {
         if (!Application::Init()) return;
 
         running_ = true;
-
+        float dt = 0.01667;  // hack
         while (running_) {
-            Application::OnInput();
-            Application::OnUpdate();
+            uint64_t start = SDL_GetPerformanceCounter();
+            Application::OnInput(dt);
+            Application::OnUpdate(dt);
+            uint64_t end = SDL_GetPerformanceCounter();
+
+            float dt = (end - start) / (float)SDL_GetPerformanceFrequency();
+            // std::cout << "Current FPS: " << std::to_string(1.0f / dt) << std::endl;
+
             // Swap front to back buffer
             SDL_GL_SwapWindow(window_);
         }
     }
 
-    void Application::OnGUI() {}
+    void Application::OnGUI(float dt) {}
 
-    void Application::OnInput() {
+    void Application::OnInput(float dt) {
         SDL_Event evt;
 
         glm::vec2 camera_delta = glm::vec2(0.0f);
@@ -253,30 +259,28 @@ namespace Rendervis {
                 }
             }
             if (evt.type == SDL_MOUSEMOTION) {
-                if (!is_clicked) return;
+                if (!is_clicked) continue;
 
-                active_scene_->MainCamera()->Rotate(glm::vec3(-evt.motion.xrel, -evt.motion.yrel, 0), 1, 0.1);
+                active_scene_->MainCamera()->Rotate(glm::vec3(-evt.motion.xrel, -evt.motion.yrel, 0), dt, 5);
             }
         }
 
-        Uint8 const *keys = SDL_GetKeyboardState(nullptr);
+        uint8_t const *keys = SDL_GetKeyboardState(nullptr);
         float xDelta = 0, yDelta = 0;
         if (keys[SDL_SCANCODE_W] == 1) camera_delta.x += 1.0f;
         if (keys[SDL_SCANCODE_S] == 1) camera_delta.x -= 1.0f;
         if (keys[SDL_SCANCODE_A] == 1) camera_delta.y -= 1.0f;
         if (keys[SDL_SCANCODE_D] == 1) camera_delta.y += 1.0f;
 
-        if (glm::length(camera_delta) > 0.0f) active_scene_->MainCamera()->Move(camera_delta, 0.00016, 10.0f);
+        if (glm::length(camera_delta) > 0.0f) active_scene_->MainCamera()->Move(camera_delta, dt, 10.0f);
     }
 
-    void Application::OnUpdate() {
+    void Application::OnUpdate(float dt) {
         glClearColor(0.843f, 0.87f, 0.98f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(50.0f)};
         std::shared_ptr<Rendervis::Camera> main_camera = active_scene_->MainCamera();
-
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::scale(transform, glm::vec3(10.0f));
         glm::mat4 view = main_camera->GetViewMatrix();
         glm::mat4 projection = main_camera->GetProjectionMatrix();
 
@@ -284,14 +288,25 @@ namespace Rendervis {
         std::shared_ptr<Rendervis::Shader> plane_shader = active_scene_->GetShader("object_shader");
 
         plane_shader->Bind();
-        plane_shader->SetUniformMat4("transformMatrix", transform);
+
         plane_shader->SetUniformMat4("viewMatrix", view);
         plane_shader->SetUniformMat4("projectionMatrix", projection);
         plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
         plane_shader->SetUniformVec3("lightPosition", glm::vec3(1.0f, 4.0f, -1.0f));
         plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
 
-        plane_object->Draw(plane_shader);
+        plane_object->Draw(plane_shader, plane_transform);
+
+        Transform light_transform{glm::vec3(1.0f, 10.0f, -1.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+
+        std::shared_ptr<Rendervis::Entity> light_object = active_scene_->GetEntity("light");
+        std::shared_ptr<Rendervis::Shader> light_shader = active_scene_->GetShader("light_shader");
+
+        light_shader->Bind();
+        light_shader->SetUniformMat4("viewMatrix", view);
+        light_shader->SetUniformMat4("projectionMatrix", projection);
+        plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
+        light_object->Draw(light_shader, light_transform);
     }
 
     void Application::Close() {
