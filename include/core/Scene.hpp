@@ -8,6 +8,7 @@
 
 #include "core/Camera.hpp"
 #include "renderer/Entity.hpp"
+#include "renderer/Material.hpp"
 #include "renderer/Shader.hpp"
 
 namespace Rendervis {

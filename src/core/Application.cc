@@ -8,13 +8,14 @@
 #include "core/Camera.hpp"
 #include "core/Scene.hpp"
 #include "renderer/Entity.hpp"
+#include "renderer/Material.hpp"
 #include "renderer/Shader.hpp"
 
 namespace Rendervis {
 
     std::shared_ptr<Scene> CreateExampleScene() {
         std::shared_ptr<Shader> object_shader =
-            std::make_shared<Rendervis::Shader>("resources/shaders/phongVert.glsl", "resources/shaders/SolidColorPhong.glsl");
+            std::make_shared<Rendervis::Shader>("resources/shaders/phongVert.glsl", "resources/shaders/phongFrag.glsl");
         std::shared_ptr<Shader> light_shader =
             std::make_shared<Rendervis::Shader>("resources/shaders/lightVert.glsl", "resources/shaders/lightFrag.glsl");
 
@@ -27,6 +28,33 @@ namespace Rendervis {
 
         // Indices for vertices order
         std::vector<GLint> plane_indices{0, 1, 2, 0, 2, 3};
+
+        std::vector<GLfloat> cube_vertices{
+            -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 0.0f,
+            0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f,
+            -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f,
+
+            -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+            -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+
+            -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, -1.0f, 0.0f,  0.0f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f, -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f,  -1.0f, 0.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f,
+
+            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+            0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+            0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  1.0f, 1.0f,
+            0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f,
+
+            -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+            -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f};
+
+        std::vector<GLint> cube_indices{0, 1, 2, 0, 2, 3};
 
         // Vertices coordinates
         std::vector<GLfloat> pyramid_vertices{
@@ -281,7 +309,10 @@ namespace Rendervis {
         glClearColor(0.843f, 0.87f, 0.98f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(50.0f)};
+        // Position of 2 objects
+        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
+        Transform light_transform{glm::vec3(0.0f, 3.0f, -5.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+
         std::shared_ptr<Rendervis::Camera> main_camera = active_scene_->MainCamera();
         glm::mat4 view = main_camera->GetViewMatrix();
         glm::mat4 projection = main_camera->GetProjectionMatrix();
@@ -290,16 +321,16 @@ namespace Rendervis {
         std::shared_ptr<Rendervis::Shader> plane_shader = active_scene_->GetShader("object_shader");
 
         plane_shader->Bind();
-
         plane_shader->SetUniformMat4("viewMatrix", view);
         plane_shader->SetUniformMat4("projectionMatrix", projection);
         plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
-        plane_shader->SetUniformVec3("lightPosition", glm::vec3(1.0f, 4.0f, -1.0f));
+        plane_shader->SetUniformVec3("lightPosition", light_transform.position);
         plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
 
-        plane_object->Draw(plane_shader, plane_transform);
+        Texture plane_texture{"resources/textures/sample-texture.jpg"};
 
-        Transform light_transform{glm::vec3(1.0f, 10.0f, -1.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+        plane_texture.Bind();
+        plane_object->Draw(plane_shader, plane_transform);
 
         std::shared_ptr<Rendervis::Entity> light_object = active_scene_->GetEntity("light");
         std::shared_ptr<Rendervis::Shader> light_shader = active_scene_->GetShader("light_shader");
@@ -307,7 +338,7 @@ namespace Rendervis {
         light_shader->Bind();
         light_shader->SetUniformMat4("viewMatrix", view);
         light_shader->SetUniformMat4("projectionMatrix", projection);
-        plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
+        light_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
         light_object->Draw(light_shader, light_transform);
     }
 

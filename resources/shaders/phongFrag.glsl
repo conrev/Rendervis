@@ -15,7 +15,7 @@ uniform sampler2D textureData;
 void main()
 {
     float ambientStrength = 0.2f;
-    float specularStrength = 0;
+    float specularStrength = 0.5f;
 
     vec3 ambientLuminance = ambientStrength * lightColor;
     vec4 objectColor = texture2D(textureData, vertUV);
@@ -27,7 +27,7 @@ void main()
     vec3 viewDir = normalize(viewPosition - worldPos);
        
     vec3 reflectDir = reflect(-lightDir, normalizedNormal);
-    vec3 specularLuminance = specularStrength * pow(max(dot(viewDir, reflectDir), 0.0), 2) * lightColor; 
+    vec3 specularLuminance = specularStrength * pow(max(dot(viewDir, reflectDir), 0.0), 32) * lightColor; 
 
     FragColor = objectColor * vec4(ambientLuminance + diffuseLuminance + specularLuminance,1.0f);
 
