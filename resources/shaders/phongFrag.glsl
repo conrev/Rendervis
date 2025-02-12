@@ -17,18 +17,17 @@ void main()
     float ambientStrength = 0.2f;
     float specularStrength = 0.5f;
 
-    vec3 ambientLuminance = ambientStrength * lightColor;
     vec4 objectColor = texture2D(textureData, vertUV);
+    vec3 ambientLuminance = ambientStrength * lightColor * objectColor.rgb;
 
     vec3 normalizedNormal = normalize(worldNormal);
     vec3 lightDir = normalize(lightPosition - worldPos);
 
-    vec3 diffuseLuminance = max(dot(normalizedNormal,lightDir),0.0) * lightColor;
+    vec3 diffuseLuminance = max(dot(normalizedNormal,lightDir),0.0) * lightColor * objectColor.rgb;
     vec3 viewDir = normalize(viewPosition - worldPos);
        
     vec3 reflectDir = reflect(-lightDir, normalizedNormal);
     vec3 specularLuminance = specularStrength * pow(max(dot(viewDir, reflectDir), 0.0), 32) * lightColor; 
 
-    FragColor = objectColor * vec4(ambientLuminance + diffuseLuminance + specularLuminance,1.0f);
-
+    FragColor = vec4(ambientLuminance + diffuseLuminance + specularLuminance, 1.0);
 }

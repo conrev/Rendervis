@@ -311,7 +311,7 @@ namespace Rendervis {
 
         // Position of 2 objects
         Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
-        Transform light_transform{glm::vec3(0.0f, 3.0f, -5.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+        Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
 
         std::shared_ptr<Rendervis::Camera> main_camera = active_scene_->MainCamera();
         glm::mat4 view = main_camera->GetViewMatrix();
@@ -327,7 +327,7 @@ namespace Rendervis {
         plane_shader->SetUniformVec3("lightPosition", light_transform.position);
         plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
 
-        Texture plane_texture{"resources/textures/sample-texture.jpg"};
+        Texture plane_texture{"resources/textures/container.png"};
 
         plane_texture.Bind();
         plane_object->Draw(plane_shader, plane_transform);

@@ -16,6 +16,25 @@ namespace Rendervis {
         Texture(const std::string& path) {
             unsigned char* data = stbi_load(path.c_str(), &texture_width_, &texture_height_, &channel_size_, 0);
 
+            GLenum texture_format;
+
+            switch (channel_size_) {
+                // single channel texture
+                case 1:
+                    texture_format = GL_RED;
+                    break;
+                // rgb texture
+                case 3:
+                    texture_format = GL_RGB;
+                    break;
+                // rgba texture (pngs)
+                case 4:
+                    texture_format = GL_RGBA;
+                    break;
+                default:
+                    texture_format = GL_RGB;
+            };
+
             if (!data) {
                 std::cerr << " ERROR: Texture Data is Empty";
             }
@@ -28,7 +47,7 @@ namespace Rendervis {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture_width_, texture_height_, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, texture_format, texture_width_, texture_height_, 0, texture_format, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
 
             stbi_image_free(data);
