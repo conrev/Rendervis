@@ -89,6 +89,11 @@ namespace Rendervis {
         glUniform1f(uniform_loc, value);
     }
 
+    void Shader::SetUniformInt(const std::string& uniform_name, int value) {
+        GLint uniform_loc = glGetUniformLocation(renderer_id_, uniform_name.c_str());
+        glUniform1i(uniform_loc, value);
+    }
+
     void Shader::SetUniformMat4(const std::string& uniform_name, const glm::mat4& value) {
         GLint uniform_loc = glGetUniformLocation(renderer_id_, uniform_name.c_str());
         glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(value));

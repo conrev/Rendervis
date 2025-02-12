@@ -12,10 +12,9 @@
 #include "renderer/Shader.hpp"
 
 namespace Rendervis {
-
     std::shared_ptr<Scene> CreateExampleScene() {
-        std::shared_ptr<Shader> object_shader =
-            std::make_shared<Rendervis::Shader>("resources/shaders/phongVert.glsl", "resources/shaders/phongFrag.glsl");
+        std::shared_ptr<Shader> object_shader = std::make_shared<Rendervis::Shader>("resources/shaders/materialPhongVert.glsl",
+                                                                                    "resources/shaders/materialPhongFrag.glsl");
         std::shared_ptr<Shader> light_shader =
             std::make_shared<Rendervis::Shader>("resources/shaders/lightVert.glsl", "resources/shaders/lightFrag.glsl");
 
@@ -91,8 +90,14 @@ namespace Rendervis {
             13, 15, 14   // Facing side
         };
 
+        // make entities
         std::shared_ptr<Entity> plane = std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices);
         std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices);
+
+        // load textures
+
+        std::shared_ptr<Texture> plane_texture = std::make_shared<Rendervis::Texture>("resources/textures/container.png");
+        std::shared_ptr<Texture> plane_specular = std::make_shared<Rendervis::Texture>("resources/textures/container_specular.png");
 
         // fix the hardcoded aspect ratio
         std::shared_ptr<Rendervis::Camera> main_camera =
@@ -106,6 +111,9 @@ namespace Rendervis {
 
         scene->AddEntity(plane, "plane");
         scene->AddEntity(light, "light");
+
+        scene->AddTexture(plane_texture, "plane_texture");
+        scene->AddTexture(plane_specular, "plane_specular");
 
         return scene;
     }
@@ -235,7 +243,7 @@ namespace Rendervis {
 
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_MULTISAMPLE);
-        glDebugMessageCallback(glDebugOutput, 0);
+        // glDebugMessageCallback(glDebugOutput, 0);
 
         active_scene_ = CreateExampleScene();
 
@@ -246,13 +254,14 @@ namespace Rendervis {
         if (!Application::Init()) return;
         uint64_t last_frame = 0;
         running_ = true;
+
         while (running_) {
             uint64_t current = SDL_GetPerformanceCounter();
             float dt = (double)((current - last_frame) / (double)SDL_GetPerformanceFrequency());
             last_frame = current;
 
-            // std::cout << "Current DeltaTime: " << std::to_string(dt) << std::endl;
-            // std::cout << "Current FPS: " << std::to_string(1.0f / dt) << std::endl;
+            std::cout << "Current DeltaTime: " << std::to_string(dt) << std::endl;
+            std::cout << "Current FPS: " << std::to_string(1.0f / dt) << std::endl;
 
             Application::OnInput(dt);
             Application::OnUpdate(dt);
@@ -326,10 +335,15 @@ namespace Rendervis {
         plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
         plane_shader->SetUniformVec3("lightPosition", light_transform.position);
         plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
+        plane_shader->SetUniformFloat("material.shininess", 32.0f);
+        plane_shader->SetUniformInt("material.diffuse", 0);
+        plane_shader->SetUniformInt("material.specular", 1);
 
-        Texture plane_texture{"resources/textures/container.png"};
+        glActiveTexture(GL_TEXTURE0);
+        active_scene_->GetTexture("plane_texture")->Bind();
+        glActiveTexture(GL_TEXTURE1);
+        active_scene_->GetTexture("plane_specular")->Bind();
 
-        plane_texture.Bind();
         plane_object->Draw(plane_shader, plane_transform);
 
         std::shared_ptr<Rendervis::Entity> light_object = active_scene_->GetEntity("light");

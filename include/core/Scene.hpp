@@ -32,10 +32,13 @@ namespace Rendervis {
         std::shared_ptr<Shader> GetShader(const std::string& identifier) const;
         void AddEntity(std::shared_ptr<Entity> entity, const std::string& identifier);
         std::shared_ptr<Entity> GetEntity(const std::string& identifier) const;
+        void AddTexture(std::shared_ptr<Texture> texture, const std::string& identifier);
+        std::shared_ptr<Texture> GetTexture(const std::string& identifier) const;
 
     private:
         std::unordered_map<std::string, std::shared_ptr<Entity>> entities_;
         std::unordered_map<std::string, std::shared_ptr<Shader>> shader_library_;
+        std::unordered_map<std::string, std::shared_ptr<Texture>> texture_library_;
         std::shared_ptr<Camera> main_camera_;
     };
 }  // namespace Rendervis

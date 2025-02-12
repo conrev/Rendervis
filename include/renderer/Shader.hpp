@@ -19,6 +19,7 @@ namespace Rendervis {
 
     public:
         void SetUniformFloat(const std::string& uniform_name, float value);
+        void SetUniformInt(const std::string& uniform_name, int value);
         void SetUniformMat4(const std::string& uniform_name, const glm::mat4& value);
         void SetUniformVec3(const std::string& uniform_name, const glm::vec3& value);
         void SetUniformVec4(const std::string& uniform_name, const glm::vec4& value);

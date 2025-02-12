@@ -32,7 +32,7 @@ namespace Rendervis {
     }
 
     void Scene::AddEntity(std::shared_ptr<Entity> entity, const std::string& identifier) {
-        if (shader_library_.count(identifier)) {
+        if (entities_.count(identifier)) {
             std::cerr << "WARNING::ENTITY LIBRARY::IDENTIFIER EXIST::IGNORED" << std::endl;
             return;
         }
@@ -40,4 +40,21 @@ namespace Rendervis {
         entities_[identifier] = entity;
     }
 
+    std::shared_ptr<Texture> Scene::GetTexture(const std::string& identifier) const {
+        if (!texture_library_.count(identifier)) {
+            std::cerr << "ERROR::TEXTURE LIBRARY::IDENTIFIER DOES NOT EXIST" << std::endl;
+            return nullptr;
+        }
+
+        return texture_library_.at(identifier);
+    }
+
+    void Scene::AddTexture(std::shared_ptr<Texture> texture, const std::string& identifier) {
+        if (texture_library_.count(identifier)) {
+            std::cerr << "WARNING::TEXTURE LIBRARY::IDENTIFIER EXIST::IGNORED" << std::endl;
+            return;
+        }
+
+        texture_library_[identifier] = texture;
+    }
 }  // namespace Rendervis
