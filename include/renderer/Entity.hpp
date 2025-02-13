@@ -19,15 +19,17 @@ namespace Rendervis {
         Entity(const std::string& file_path);
 
         // Copy the data for now
-        Entity(std::vector<GLfloat> vertex_data, std::vector<GLint> index_data);
+        Entity(std::vector<GLfloat> vertex_data, std::vector<GLint> index_data, Transform transform);
 
         ~Entity();
 
     public:
-        void Draw(std::shared_ptr<Shader> render_shader, Transform transform);
+        void Draw(std::shared_ptr<Shader> render_shader);
+        Transform GetTransform();  // for now, this is also how you modify transform
 
     private:
         std::vector<float> vertex_data_;
+        Transform transform_{};
         // OpenGL related data
         // future:
         // pointer to textures

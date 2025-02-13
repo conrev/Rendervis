@@ -90,18 +90,21 @@ namespace Rendervis {
             13, 15, 14   // Facing side
         };
 
+        // Position of 2 objects
+        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
+        Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+
         // make entities
-        std::shared_ptr<Entity> plane = std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices);
-        std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices);
+        std::shared_ptr<Entity> plane = std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform);
+        std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices, light_transform);
 
         // load textures
-
         std::shared_ptr<Texture> plane_texture = std::make_shared<Rendervis::Texture>("resources/textures/container.png");
         std::shared_ptr<Texture> plane_specular = std::make_shared<Rendervis::Texture>("resources/textures/container_specular.png");
 
         // fix the hardcoded aspect ratio
         std::shared_ptr<Rendervis::Camera> main_camera =
-            std::make_shared<Rendervis::Camera>(glm::vec3(.0, 2.0, 5.0), (float)800 / 640, 0.1f, 100.0f, glm::radians(45.0f));
+            std::make_shared<Rendervis::Camera>(glm::vec3(.0, 2.0, 5.0), (float)1920 / 1080, 0.1f, 100.0f, glm::radians(45.0f));
 
         std::shared_ptr<Rendervis::Scene> scene = std::make_shared<Rendervis::Scene>();
         scene->SetMainCamera(main_camera);
@@ -318,22 +321,20 @@ namespace Rendervis {
         glClearColor(0.843f, 0.87f, 0.98f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Position of 2 objects
-        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
-        Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
-
         std::shared_ptr<Rendervis::Camera> main_camera = active_scene_->MainCamera();
         glm::mat4 view = main_camera->GetViewMatrix();
         glm::mat4 projection = main_camera->GetProjectionMatrix();
 
         std::shared_ptr<Rendervis::Entity> plane_object = active_scene_->GetEntity("plane");
         std::shared_ptr<Rendervis::Shader> plane_shader = active_scene_->GetShader("object_shader");
+        std::shared_ptr<Rendervis::Entity> light_object = active_scene_->GetEntity("light");
+        std::shared_ptr<Rendervis::Shader> light_shader = active_scene_->GetShader("light_shader");
 
         plane_shader->Bind();
         plane_shader->SetUniformMat4("viewMatrix", view);
         plane_shader->SetUniformMat4("projectionMatrix", projection);
         plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
-        plane_shader->SetUniformVec3("lightPosition", light_transform.position);
+        plane_shader->SetUniformVec3("lightPosition", light_object->GetTransform().position);
         plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
         plane_shader->SetUniformFloat("material.shininess", 32.0f);
         plane_shader->SetUniformInt("material.diffuse", 0);
@@ -344,16 +345,13 @@ namespace Rendervis {
         glActiveTexture(GL_TEXTURE1);
         active_scene_->GetTexture("plane_specular")->Bind();
 
-        plane_object->Draw(plane_shader, plane_transform);
-
-        std::shared_ptr<Rendervis::Entity> light_object = active_scene_->GetEntity("light");
-        std::shared_ptr<Rendervis::Shader> light_shader = active_scene_->GetShader("light_shader");
+        plane_object->Draw(plane_shader);
 
         light_shader->Bind();
         light_shader->SetUniformMat4("viewMatrix", view);
         light_shader->SetUniformMat4("projectionMatrix", projection);
         light_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
-        light_object->Draw(light_shader, light_transform);
+        light_object->Draw(light_shader);
     }
 
     void Application::Close() {
