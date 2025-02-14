@@ -1,8 +1,11 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <SDL.h>
 #include <glad/glad.h>
-#include <SDL2/SDL.h>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl2.h>
 
 #include <memory>
 #include <string>

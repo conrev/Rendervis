@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "core/Camera.hpp"
+#include "core/Light.hpp"
 #include "renderer/Entity.hpp"
 #include "renderer/Material.hpp"
 #include "renderer/Shader.hpp"
@@ -34,12 +35,14 @@ namespace Rendervis {
         std::shared_ptr<Entity> GetEntity(const std::string& identifier) const;
         void AddTexture(std::shared_ptr<Texture> texture, const std::string& identifier);
         std::shared_ptr<Texture> GetTexture(const std::string& identifier) const;
+        void Draw();
 
     private:
         std::unordered_map<std::string, std::shared_ptr<Entity>> entities_;
         std::unordered_map<std::string, std::shared_ptr<Shader>> shader_library_;
         std::unordered_map<std::string, std::shared_ptr<Texture>> texture_library_;
         std::shared_ptr<Camera> main_camera_;
+        std::vector<PointLight> lights_;
     };
 }  // namespace Rendervis
 

@@ -25,19 +25,15 @@ namespace Rendervis {
 
     public:
         void Draw(std::shared_ptr<Shader> render_shader);
-        Transform GetTransform();  // for now, this is also how you modify transform
 
-    private:
-        std::vector<float> vertex_data_;
+    public:
         Transform transform_{};
-        // OpenGL related data
-        // future:
-        // pointer to textures
 
     private:
         GLuint vao_id_{};
         GLuint vbo_id_{};
         GLuint ebo_id_{};
+        std::vector<float> vertex_data_;
     };
 }  // namespace Rendervis
 

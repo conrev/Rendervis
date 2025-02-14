@@ -201,6 +201,9 @@ namespace Rendervis {
     }
 
     Application::~Application() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
         SDL_GL_DeleteContext(gl_context_);
         SDL_DestroyWindow(window_);
         SDL_Quit();
@@ -246,7 +249,24 @@ namespace Rendervis {
 
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_MULTISAMPLE);
-        // glDebugMessageCallback(glDebugOutput, 0);
+        glDebugMessageCallback(glDebugOutput, 0);
+
+        SDL_GL_SetSwapInterval(1);
+
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+
+        // Setup Platform/Renderer backends
+        ImGui_ImplSDL2_InitForOpenGL(window_, gl_context);
+        ImGui_ImplOpenGL3_Init("#version 430 core");
 
         active_scene_ = CreateExampleScene();
 
@@ -257,25 +277,42 @@ namespace Rendervis {
         if (!Application::Init()) return;
         uint64_t last_frame = 0;
         running_ = true;
-
         while (running_) {
             uint64_t current = SDL_GetPerformanceCounter();
             float dt = (double)((current - last_frame) / (double)SDL_GetPerformanceFrequency());
             last_frame = current;
 
-            std::cout << "Current DeltaTime: " << std::to_string(dt) << std::endl;
-            std::cout << "Current FPS: " << std::to_string(1.0f / dt) << std::endl;
-
+            Application::OnGUI(dt);
             Application::OnInput(dt);
             Application::OnUpdate(dt);
             uint64_t end = SDL_GetPerformanceCounter();
 
+            // Render Imgui elements
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             // Swap front to back buffer
             SDL_GL_SwapWindow(window_);
         }
     }
 
-    void Application::OnGUI(float dt) {}
+    void Application::OnGUI(float dt) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        ImGuiIO &io = ImGui::GetIO();
+        static float f = 0.0f;
+        static int counter = 0;
+        ImGui::Begin("Debug Window");  // Create a window called "Hello, world!" and append into it.
+        if (ImGui::CollapsingHeader("Scene Elements")) {
+            ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
+            ImGui::SliderFloat3("LightPositon", glm::value_ptr(active_scene_->GetEntity("light")->transform_.position), -10.0f, 10.0f);
+        }
+        if (ImGui::CollapsingHeader("Performance")) {
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        }
+        ImGui::End();
+    }
 
     void Application::OnInput(float dt) {
         SDL_Event evt;
@@ -284,6 +321,8 @@ namespace Rendervis {
         static bool is_clicked;
 
         while (SDL_PollEvent(&evt) != 0) {
+            ImGui_ImplSDL2_ProcessEvent(&evt);
+
             if (evt.type == SDL_QUIT) {
                 Application::Close();
             }
@@ -334,7 +373,7 @@ namespace Rendervis {
         plane_shader->SetUniformMat4("viewMatrix", view);
         plane_shader->SetUniformMat4("projectionMatrix", projection);
         plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
-        plane_shader->SetUniformVec3("lightPosition", light_object->GetTransform().position);
+        plane_shader->SetUniformVec3("lightPosition", light_object->transform_.position);
         plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
         plane_shader->SetUniformFloat("material.shininess", 32.0f);
         plane_shader->SetUniformInt("material.diffuse", 0);

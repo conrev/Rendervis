@@ -2,12 +2,11 @@
 #define MATERIAL_H
 
 #include <glad/glad.h>
+#include <stb_image.h>
 
 #include <iostream>
 #include <memory>
 #include <string>
-
-#include "stb_image.h"
 
 namespace Rendervis {
 

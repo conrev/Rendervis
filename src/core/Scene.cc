@@ -57,4 +57,6 @@ namespace Rendervis {
 
         texture_library_[identifier] = texture;
     }
+
+    void Scene::Draw() {}
 }  // namespace Rendervis

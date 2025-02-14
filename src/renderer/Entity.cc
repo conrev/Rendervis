@@ -52,12 +52,8 @@ namespace Rendervis {
         glDeleteBuffers(1, &ebo_id_);
     }
 
-    Transform Entity::GetTransform() {
-        // not great, is this being copied?
-        return transform_;
-    }
-
     void Entity::Draw(std::shared_ptr<Shader> render_shader) {
+        // probably dont need direct reference to render shader, a name is enough?
         render_shader->Bind();
         glBindVertexArray(vao_id_);
 
