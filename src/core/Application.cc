@@ -219,6 +219,11 @@ namespace Rendervis {
     }
 
     bool Application::Init() {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+            std::cerr << "Failed to initialize the SDL2 library\n";
+            return false;
+        }
+
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -226,11 +231,6 @@ namespace Rendervis {
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-            std::cerr << "Failed to initialize the SDL2 library\n";
-            return false;
-        }
 
         window_ = SDL_CreateWindow(app_setting_.window_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                    app_setting_.window_width, app_setting_.window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);

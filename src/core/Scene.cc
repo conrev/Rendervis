@@ -71,20 +71,25 @@ namespace Rendervis {
     }
 
     void Scene::Draw() {
-        for (const auto& [_, shader] : shader_library_) {
-            // give all shaders scene-wide uniform values, assume their name for now
-            shader->Bind();
-            shader->SetUniformMat4("viewMatrix", main_camera_->GetViewMatrix());
-            shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
-            shader->SetUniformVec3("lightColor", lights_[0]->color);
-            shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
-            shader->SetUniformVec3("viewPosition", main_camera_->Position());
-        }
+        // for (const auto& [_, shader] : shader_library_) {
+        //     // give all shaders scene-wide uniform values, assume their name for now
+        //     shader->Bind();
+        //     shader->SetUniformMat4("viewMatrix", main_camera_->GetViewMatrix());
+        //     shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
+        //     shader->SetUniformVec3("lightColor", lights_[0]->color);
+        //     shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
+        //     shader->SetUniformVec3("viewPosition", main_camera_->Position());
+        // }
 
         for (const auto& [_, entity] : entities_) {
             // set the shader uniform to entity-specific values
             std::shared_ptr<Shader> entity_shader = shader_library_[entity->material_.shader_name];
             entity_shader->Bind();
+            entity_shader->SetUniformMat4("viewMatrix", main_camera_->GetViewMatrix());
+            entity_shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
+            entity_shader->SetUniformVec3("lightColor", lights_[0]->color);
+            entity_shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
+            entity_shader->SetUniformVec3("viewPosition", main_camera_->Position());
             entity_shader->SetUniformMat4("transformMatrix", entity->transform_.GetTransformationMatrix());
 
             for (size_t i = 0; i < entity->material_.textures.size(); i++) {
