@@ -94,13 +94,22 @@ namespace Rendervis {
         Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
         Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
 
-        // make entities
-        std::shared_ptr<Entity> plane = std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform);
-        std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices, light_transform);
-
         // load textures
         std::shared_ptr<Texture> plane_texture = std::make_shared<Rendervis::Texture>("resources/textures/container.png");
         std::shared_ptr<Texture> plane_specular = std::make_shared<Rendervis::Texture>("resources/textures/container_specular.png");
+
+        std::vector<TextureMapping> plane_texture_map = {TextureMapping{"plane_texture", "material.diffuse"},
+                                                         TextureMapping{"plane_specular", "material.specular"}};
+
+        // Material
+        // use default shader, and texture maps given above
+        Material plane_material{"Default", plane_texture_map, 256.0f};
+
+        // make entities
+        std::shared_ptr<Entity> plane =
+            std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform, plane_material);
+        // std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices, light_transform);
+        std::shared_ptr<PointLight> light = std::make_shared<Rendervis::PointLight>(light_transform);
 
         // fix the hardcoded aspect ratio
         std::shared_ptr<Rendervis::Camera> main_camera =
@@ -109,11 +118,11 @@ namespace Rendervis {
         std::shared_ptr<Rendervis::Scene> scene = std::make_shared<Rendervis::Scene>();
         scene->SetMainCamera(main_camera);
 
-        scene->AddShader(object_shader, "object_shader");
-        scene->AddShader(light_shader, "light_shader");
+        scene->AddShader(object_shader, "Default");
+        scene->AddShader(light_shader, "LightShader");
 
         scene->AddEntity(plane, "plane");
-        scene->AddEntity(light, "light");
+        scene->AddLight(light);
 
         scene->AddTexture(plane_texture, "plane_texture");
         scene->AddTexture(plane_specular, "plane_specular");
@@ -306,7 +315,7 @@ namespace Rendervis {
         ImGui::Begin("Debug Window");  // Create a window called "Hello, world!" and append into it.
         if (ImGui::CollapsingHeader("Scene Elements")) {
             ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
-            ImGui::SliderFloat3("LightPositon", glm::value_ptr(active_scene_->GetEntity("light")->transform_.position), -10.0f, 10.0f);
+            ImGui::SliderFloat3("LightPositon", glm::value_ptr(active_scene_->GetLight(0)->transform.position), -10.0f, 10.0f);
         }
         if (ImGui::CollapsingHeader("Performance")) {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
@@ -360,37 +369,7 @@ namespace Rendervis {
         glClearColor(0.843f, 0.87f, 0.98f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        std::shared_ptr<Rendervis::Camera> main_camera = active_scene_->MainCamera();
-        glm::mat4 view = main_camera->GetViewMatrix();
-        glm::mat4 projection = main_camera->GetProjectionMatrix();
-
-        std::shared_ptr<Rendervis::Entity> plane_object = active_scene_->GetEntity("plane");
-        std::shared_ptr<Rendervis::Shader> plane_shader = active_scene_->GetShader("object_shader");
-        std::shared_ptr<Rendervis::Entity> light_object = active_scene_->GetEntity("light");
-        std::shared_ptr<Rendervis::Shader> light_shader = active_scene_->GetShader("light_shader");
-
-        plane_shader->Bind();
-        plane_shader->SetUniformMat4("viewMatrix", view);
-        plane_shader->SetUniformMat4("projectionMatrix", projection);
-        plane_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
-        plane_shader->SetUniformVec3("lightPosition", light_object->transform_.position);
-        plane_shader->SetUniformVec3("viewPosition", main_camera->Position());
-        plane_shader->SetUniformFloat("material.shininess", 32.0f);
-        plane_shader->SetUniformInt("material.diffuse", 0);
-        plane_shader->SetUniformInt("material.specular", 1);
-
-        glActiveTexture(GL_TEXTURE0);
-        active_scene_->GetTexture("plane_texture")->Bind();
-        glActiveTexture(GL_TEXTURE1);
-        active_scene_->GetTexture("plane_specular")->Bind();
-
-        plane_object->Draw(plane_shader);
-
-        light_shader->Bind();
-        light_shader->SetUniformMat4("viewMatrix", view);
-        light_shader->SetUniformMat4("projectionMatrix", projection);
-        light_shader->SetUniformVec3("lightColor", glm::vec3(1.0f));
-        light_object->Draw(light_shader);
+        active_scene_->Draw();
     }
 
     void Application::Close() {

@@ -58,5 +58,44 @@ namespace Rendervis {
         texture_library_[identifier] = texture;
     }
 
-    void Scene::Draw() {}
+    void Scene::AddLight(std::shared_ptr<PointLight> light) {
+        lights_.push_back(light);
+    }
+
+    std::shared_ptr<PointLight> Scene::GetLight(int index) const {
+        if (index >= lights_.size()) {
+            std::cerr << "ERROR::SCENE::GETLIGHT INDEX OUT OF BOUNDS" << std::endl;
+            return nullptr;
+        }
+        return lights_[index];
+    }
+
+    void Scene::Draw() {
+        for (const auto& [_, shader] : shader_library_) {
+            // give all shaders scene-wide uniform values, assume their name for now
+            shader->Bind();
+            shader->SetUniformMat4("viewMatrix", main_camera_->GetViewMatrix());
+            shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
+            shader->SetUniformVec3("lightColor", lights_[0]->color);
+            shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
+            shader->SetUniformVec3("viewPosition", main_camera_->Position());
+        }
+
+        for (const auto& [_, entity] : entities_) {
+            // set the shader uniform to entity-specific values
+            std::shared_ptr<Shader> entity_shader = shader_library_[entity->material_.shader_name];
+            entity_shader->Bind();
+            entity_shader->SetUniformMat4("transformMatrix", entity->transform_.GetTransformationMatrix());
+
+            for (size_t i = 0; i < entity->material_.textures.size(); i++) {
+                std::shared_ptr<Texture> texture = texture_library_[entity->material_.textures[i].texture_name];
+                entity_shader->SetUniformInt(entity->material_.textures[i].uniform_name, i);
+                // std::cout << entity->material_.textures[i].uniform_name << i << std::endl;
+                glActiveTexture(GL_TEXTURE0 + i);
+                texture->Bind();
+            }
+            // invoke the draw call
+            entity->Draw();
+        }
+    }
 }  // namespace Rendervis

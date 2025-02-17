@@ -2,8 +2,9 @@
 
 namespace Rendervis {
 
-    Entity::Entity(std::vector<GLfloat> vertex_data, std::vector<GLint> index_data, Transform transform)
-        : transform_{transform}, vertex_data_(vertex_data) {
+    Entity::Entity(std::vector<GLfloat> vertex_data, std::vector<GLint> index_data, Transform transform, Material material,
+                   const std::string &shader_to_use)
+        : transform_{transform}, vertex_data_(vertex_data), shader_to_use_(shader_to_use), material_(material) {
         glGenVertexArrays(1, &vao_id_);
         glGenBuffers(1, &vbo_id_);
         glGenBuffers(1, &ebo_id_);
@@ -52,12 +53,10 @@ namespace Rendervis {
         glDeleteBuffers(1, &ebo_id_);
     }
 
-    void Entity::Draw(std::shared_ptr<Shader> render_shader) {
+    void Entity::Draw() {
         // probably dont need direct reference to render shader, a name is enough?
-        render_shader->Bind();
         glBindVertexArray(vao_id_);
 
-        render_shader->SetUniformMat4("transformMatrix", transform_.GetTransformationMatrix());
         glDrawElements(GL_TRIANGLES, sizeof(vertex_data_), GL_UNSIGNED_INT, 0);
     }
 

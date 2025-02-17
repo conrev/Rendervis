@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "core/Transform.hpp"
+#include "renderer/Material.hpp"
 #include "renderer/Shader.hpp"
 
 namespace Rendervis {
@@ -19,21 +20,24 @@ namespace Rendervis {
         Entity(const std::string& file_path);
 
         // Copy the data for now
-        Entity(std::vector<GLfloat> vertex_data, std::vector<GLint> index_data, Transform transform);
+        Entity(std::vector<GLfloat> vertex_data, std::vector<GLint> index_data, Transform transform, Material material,
+               const std::string& shader_to_use = "Default");
 
         ~Entity();
 
     public:
-        void Draw(std::shared_ptr<Shader> render_shader);
+        void Draw();
 
     public:
         Transform transform_{};
+        std::string shader_to_use_{};
+        Material material_{};
 
     private:
         GLuint vao_id_{};
         GLuint vbo_id_{};
         GLuint ebo_id_{};
-        std::vector<float> vertex_data_;
+        std::vector<float> vertex_data_{};
     };
 }  // namespace Rendervis
 

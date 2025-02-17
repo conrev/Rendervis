@@ -9,7 +9,11 @@
 #include <string>
 
 namespace Rendervis {
-
+    struct TextureMapping {
+        // maps texture identifier to a specific uniform
+        std::string texture_name;
+        std::string uniform_name;
+    };
     class Texture {
     public:
         Texture(const std::string& path) {
@@ -63,7 +67,12 @@ namespace Rendervis {
         int32_t channel_size_{};
         GLuint texture_id_{};
     };
-
+    struct Material {
+        std::string shader_name;               // identifiers of shader in the scene
+        std::vector<TextureMapping> textures;  // identifier of textures in the scene
+        float shininess = 32.0f;
+        // what about other uniforms?
+    };
 }  // namespace Rendervis
 
 #endif

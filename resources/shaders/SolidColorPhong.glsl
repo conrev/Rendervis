@@ -14,7 +14,7 @@ uniform vec3 lightPosition;
 void main()
 {
     float ambientStrength = 0.2f;
-    float specularStrength = 0.2f;
+    float specularStrength = 1.0f;
 
     vec3 ambientLuminance = ambientStrength * lightColor;
     vec4 objectColor = vertColor;
