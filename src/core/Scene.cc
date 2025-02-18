@@ -95,6 +95,7 @@ namespace Rendervis {
             for (size_t i = 0; i < entity->material_.textures.size(); i++) {
                 std::shared_ptr<Texture> texture = texture_library_[entity->material_.textures[i].texture_name];
                 entity_shader->SetUniformInt(entity->material_.textures[i].uniform_name, i);
+                entity_shader->SetUniformFloat("material.shininess", entity->material_.shininess);
                 // std::cout << entity->material_.textures[i].uniform_name << i << std::endl;
                 glActiveTexture(GL_TEXTURE0 + i);
                 texture->Bind();
