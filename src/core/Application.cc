@@ -10,6 +10,7 @@
 #include "renderer/Entity.hpp"
 #include "renderer/Material.hpp"
 #include "renderer/Shader.hpp"
+#include "tiny_obj_loader.h"
 
 namespace Rendervis {
     std::shared_ptr<Scene> CreateExampleScene() {
@@ -91,7 +92,7 @@ namespace Rendervis {
         };
 
         // Position of 2 objects
-        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
+        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(1.0f)};
         Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
 
         // load textures
@@ -106,8 +107,8 @@ namespace Rendervis {
         Material plane_material{"Default", plane_texture_map, 256.0f};
 
         // make entities
-        std::shared_ptr<Entity> plane =
-            std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform, plane_material);
+        // std::shared_ptr<Entity> plane =
+        //    std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform, plane_material);
         // std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices, light_transform);
         std::shared_ptr<PointLight> light = std::make_shared<Rendervis::PointLight>(light_transform);
 
@@ -116,12 +117,16 @@ namespace Rendervis {
             std::make_shared<Rendervis::Camera>(glm::vec3(.0, 2.0, 5.0), (float)1920 / 1080, 0.1f, 100.0f, glm::radians(45.0f));
 
         std::shared_ptr<Rendervis::Scene> scene = std::make_shared<Rendervis::Scene>();
+
+        std::shared_ptr<Rendervis::Entity> entity =
+            std::make_shared<Rendervis::Entity>("resources/models/vehicle-speedster.obj", "resources/models/", plane_transform);
+
         scene->SetMainCamera(main_camera);
 
         scene->AddShader(object_shader, "Default");
         scene->AddShader(light_shader, "LightShader");
 
-        scene->AddEntity(plane, "plane");
+        scene->AddEntity(entity, "car");
         scene->AddLight(light);
 
         scene->AddTexture(plane_texture, "plane_texture");
@@ -314,8 +319,9 @@ namespace Rendervis {
         static int counter = 0;
         ImGui::Begin("Debug Window");  // Create a window called "Hello, world!" and append into it.
         if (ImGui::CollapsingHeader("Scene Elements")) {
-            ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
+            // ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
             ImGui::SliderFloat3("LightPositon", glm::value_ptr(active_scene_->GetLight(0)->transform.position), -10.0f, 10.0f);
+            ImGui::SliderFloat3("ObjectPosition", glm::value_ptr(active_scene_->GetEntity("car")->transform_.position), -10.0f, 10.0f);
         }
         if (ImGui::CollapsingHeader("Performance")) {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);

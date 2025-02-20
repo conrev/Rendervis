@@ -10,6 +10,7 @@
 #include "core/Light.hpp"
 #include "renderer/Entity.hpp"
 #include "renderer/Material.hpp"
+#include "renderer/Mesh.hpp"
 #include "renderer/Shader.hpp"
 
 namespace Rendervis {
@@ -19,7 +20,7 @@ namespace Rendervis {
 
     public:
         Scene() = default;
-        Scene(std::shared_ptr<Camera> main_camera) : main_camera_(main_camera) {}
+        // Scene(std::shared_ptr<Camera> main_camera) : main_camera_(main_camera) {}
         std::shared_ptr<Camera> MainCamera() const {
             return main_camera_;
         }

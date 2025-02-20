@@ -55,6 +55,28 @@ namespace Rendervis {
 
             stbi_image_free(data);
         }
+        ~Texture() {
+            glDeleteTextures(1, &texture_id_);
+        }
+
+        Texture(Texture&& other)
+            : texture_width_{other.texture_width_}
+            , texture_height_{other.texture_height_}
+            , channel_size_{other.channel_size_}
+            , texture_id_{other.texture_id_} {
+            other.texture_width_ = 0;
+            other.texture_height_ = 0;
+            other.channel_size_ = 0;
+            other.texture_id_ = 0;
+        }
+        Texture& operator=(Texture&& other) {
+            if (this == &other) return *this;
+            texture_width_ = std::move(other.texture_width_);
+            texture_height_ = std::move(other.texture_height_);
+            texture_id_ = std::move(other.texture_id_);
+
+            return *this;
+        }
 
     public:
         void Bind() const {
@@ -62,11 +84,15 @@ namespace Rendervis {
         }
 
     private:
+        Texture(const Texture&);
+        Texture& operator=(const Texture&);
+
         int32_t texture_width_{};
         int32_t texture_height_{};
         int32_t channel_size_{};
         GLuint texture_id_{};
     };
+
     struct Material {
         std::string shader_name;               // identifiers of shader in the scene
         std::vector<TextureMapping> textures;  // identifier of textures in the scene

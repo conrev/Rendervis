@@ -24,7 +24,6 @@ namespace Rendervis::Util {
         }
         return result;
     }
-
 }  // namespace Rendervis::Util
 
 #endif

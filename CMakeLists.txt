@@ -14,6 +14,7 @@ PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/src/core/Scene.cc
       ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/Shader.cc
       ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/Entity.cc
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/Mesh.cc
 )
 
 # copy shaders to build
@@ -30,7 +31,7 @@ add_custom_target(copy_resource ALL
                 ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
             COMMENT "Copying resources")
 
-target_link_libraries(${PROJECT_NAME} glad stb_image glm::glm imgui)
+target_link_libraries(${PROJECT_NAME} glad stb_image glm::glm imgui tinyobjloader)
 
 target_include_directories(${PROJECT_NAME}
 PRIVATE  
