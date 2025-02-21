@@ -17,6 +17,7 @@ namespace Rendervis {
     class Texture {
     public:
         Texture(const std::string& path) {
+            stbi_set_flip_vertically_on_load(true);
             unsigned char* data = stbi_load(path.c_str(), &texture_width_, &texture_height_, &channel_size_, 0);
 
             GLenum texture_format;

@@ -103,18 +103,18 @@ namespace Rendervis {
             entity_shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
             entity_shader->SetUniformVec3("lightColor", lights_[0]->color);
             entity_shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
+
             entity_shader->SetUniformVec3("viewPosition", main_camera_->Position());
             entity_shader->SetUniformMat4("transformMatrix", entity->transform_.GetTransformationMatrix());
 
-            // for (size_t i = 0; i < entity->material_.textures.size(); i++) {
-            //     std::shared_ptr<Texture> texture = texture_library_[entity->material_.textures[i].texture_name];
-            //     entity_shader->SetUniformInt(entity->material_.textures[i].uniform_name, i);
-            //     entity_shader->SetUniformFloat("material.shininess", entity->material_.shininess);
-            //     // std::cout << entity->material_.textures[i].uniform_name << i << std::endl;
-            //     glActiveTexture(GL_TEXTURE0 + i);
-            //     texture->Bind();
-            // }
-            // invoke the draw call
+            for (size_t i = 0; i < entity->material_.textures.size(); i++) {
+                std::shared_ptr<Texture> texture = texture_library_[entity->material_.textures[i].texture_name];
+                entity_shader->SetUniformInt(entity->material_.textures[i].uniform_name, i);
+                entity_shader->SetUniformFloat("material.shininess", entity->material_.shininess);
+                // std::cout << entity->material_.textures[i].uniform_name << i << std::endl;
+                glActiveTexture(GL_TEXTURE0 + i);
+                texture->Bind();
+            }
             entity->Draw();
         }
     }

@@ -92,7 +92,6 @@ namespace Rendervis {
     // }
 
     void Entity::Draw() {
-        meshes_[0].Draw();
         for (auto &mesh : meshes_) {
             mesh.Draw();
         }

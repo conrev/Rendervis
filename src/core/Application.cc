@@ -92,25 +92,24 @@ namespace Rendervis {
         };
 
         // Position of 2 objects
-        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+        Transform obj_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(1.0f)};
         Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
 
         // load textures
-        std::shared_ptr<Texture> plane_texture = std::make_shared<Rendervis::Texture>("resources/textures/container.png");
-        std::shared_ptr<Texture> plane_specular = std::make_shared<Rendervis::Texture>("resources/textures/container_specular.png");
+        std::shared_ptr<Texture> colormaps = std::make_shared<Rendervis::Texture>("resources/models/Textures/colormap.png");
+        std::shared_ptr<Texture> black = std::make_shared<Rendervis::Texture>("resources/texture/black.png");
 
-        std::vector<TextureMapping> plane_texture_map = {TextureMapping{"plane_texture", "material.diffuse"},
-                                                         TextureMapping{"plane_specular", "material.specular"}};
+        std::vector<TextureMapping> texture_map = {TextureMapping{"colormaps", "material.diffuse"},
+                                                   TextureMapping{"black", "material.specular"}};
 
         // Material
         // use default shader, and texture maps given above
-        Material plane_material{"Default", plane_texture_map, 256.0f};
+        Material plane_material{"Default", texture_map, 256.0f};
 
         // make entities
-        // std::shared_ptr<Entity> plane =
-        //    std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform, plane_material);
-        // std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices, light_transform);
         std::shared_ptr<PointLight> light = std::make_shared<Rendervis::PointLight>(light_transform);
+        std::shared_ptr<Rendervis::Entity> entity =
+            std::make_shared<Rendervis::Entity>("resources/models/vehicle-speedster.obj", "resources/models/", obj_transform);
 
         // fix the hardcoded aspect ratio
         std::shared_ptr<Rendervis::Camera> main_camera =
@@ -118,8 +117,7 @@ namespace Rendervis {
 
         std::shared_ptr<Rendervis::Scene> scene = std::make_shared<Rendervis::Scene>();
 
-        std::shared_ptr<Rendervis::Entity> entity =
-            std::make_shared<Rendervis::Entity>("resources/models/vehicle-speedster.obj", "resources/models/", plane_transform);
+        entity->material_ = plane_material;
 
         scene->SetMainCamera(main_camera);
 
@@ -129,8 +127,8 @@ namespace Rendervis {
         scene->AddEntity(entity, "car");
         scene->AddLight(light);
 
-        scene->AddTexture(plane_texture, "plane_texture");
-        scene->AddTexture(plane_specular, "plane_specular");
+        scene->AddTexture(colormaps, "colormaps");
+        scene->AddTexture(black, "black");
 
         return scene;
     }
@@ -320,7 +318,9 @@ namespace Rendervis {
         ImGui::Begin("Debug Window");  // Create a window called "Hello, world!" and append into it.
         if (ImGui::CollapsingHeader("Scene Elements")) {
             // ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
-            ImGui::SliderFloat3("LightPositon", glm::value_ptr(active_scene_->GetLight(0)->transform.position), -10.0f, 10.0f);
+            ImGui::SliderFloat3("Light Position", glm::value_ptr(active_scene_->GetLight(0)->transform.position), -10.0f, 10.0f);
+            ImGui::ColorPicker3("Light Color", glm::value_ptr(active_scene_->GetLight(0)->color));
+
             ImGui::SliderFloat3("ObjectPosition", glm::value_ptr(active_scene_->GetEntity("car")->transform_.position), -10.0f, 10.0f);
         }
         if (ImGui::CollapsingHeader("Performance")) {

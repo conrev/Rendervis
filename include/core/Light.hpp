@@ -14,6 +14,7 @@ namespace Rendervis {
         PointLight(Transform light_transform, glm::vec3 light_color = glm::vec3(1.0f), float light_intensity = 1.0f)
             : transform(light_transform), color(light_color), intensity(light_intensity) {}
     };
+
 }  // namespace Rendervis
 
 #endif
