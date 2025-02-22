@@ -10,12 +10,12 @@ namespace Rendervis {
 
         if (!reader.ParseFromFile(model_path, reader_config)) {
             if (!reader.Error().empty()) {
-                std::cerr << "ERROR::TinyObjReader:: " << reader.Error();
+                std::cerr << "ERROR::TinyObjReader:: " << reader.Error() << "\n";
             }
         }
 
         if (!reader.Warning().empty()) {
-            std::cerr << "WARNING::TinyObjReader:: " << reader.Warning();
+            std::cerr << "WARNING::TinyObjReader:: " << reader.Warning() << "\n";
         }
 
         auto &attrib = reader.GetAttrib();

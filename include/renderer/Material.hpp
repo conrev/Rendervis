@@ -40,7 +40,7 @@ namespace Rendervis {
             };
 
             if (!data) {
-                std::cerr << " ERROR: Texture Data is Empty";
+                std::cerr << "ERROR::TextureLoader::Texture Data is Empty\n";
             }
 
             glGenTextures(1, &texture_id_);

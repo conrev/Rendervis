@@ -19,97 +19,35 @@ namespace Rendervis {
         std::shared_ptr<Shader> light_shader =
             std::make_shared<Rendervis::Shader>("resources/shaders/lightVert.glsl", "resources/shaders/lightFrag.glsl");
 
-        // Vertices coordinates
-        std::vector<GLfloat> plane_vertices{//     COORDINATES     /        COLORS        /    TexCoord    /       NORMALS     //
-                                            -1.0f, 0.0f, 1.0f,  0.18f, 0.18f, 0.24f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-                                            -1.0f, 0.0f, -1.0f, 0.18f, 0.18f, 0.24f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                                            1.0f,  0.0f, -1.0f, 0.18f, 0.18f, 0.24f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                                            1.0f,  0.0f, 1.0f,  0.18f, 0.18f, 0.24f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-
-        // Indices for vertices order
-        std::vector<GLint> plane_indices{0, 1, 2, 0, 2, 3};
-
-        std::vector<GLfloat> cube_vertices{
-            -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 0.0f,
-            0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f,
-            -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f,
-
-            -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-            -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-
-            -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, -1.0f, 0.0f,  0.0f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f, -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f,
-            -0.5f, -0.5f, 0.5f,  -1.0f, 0.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f,
-
-            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-            0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-            0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  1.0f, 1.0f,
-            0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f,
-            -0.5f, -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f,
-
-            -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-            -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f};
-
-        std::vector<GLint> cube_indices{0, 1, 2, 0, 2, 3};
-
-        // Vertices coordinates
-        std::vector<GLfloat> pyramid_vertices{
-            //     COORDINATES     /        COLORS          /    TexCoord   / NORMALS //
-            -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-            -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 5.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-            0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 5.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-            0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-
-            -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f, -0.8f, 0.5f,  0.0f,  // Left Side
-            -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, -0.8f, 0.5f,  0.0f,  // Left Side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, -0.8f, 0.5f,  0.0f,  // Left Side
-
-            -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f,  0.5f,  -0.8f,  // Non-facing side
-            0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f,  0.5f,  -0.8f,  // Non-facing side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.0f,  0.5f,  -0.8f,  // Non-facing side
-
-            0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.8f,  0.5f,  0.0f,  // Right side
-            0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.8f,  0.5f,  0.0f,  // Right side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.8f,  0.5f,  0.0f,  // Right side
-
-            0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f,  0.5f,  0.8f,  // Facing side
-            -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f,  0.5f,  0.8f,  // Facing side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.0f,  0.5f,  0.8f   // Facing side
-        };
-
-        // Indices for vertices order
-        std::vector<GLint> pyramid_indices{
-            0,  1,  2,   // Bottom side
-            0,  2,  3,   // Bottom side
-            4,  6,  5,   // Left side
-            7,  9,  8,   // Non-facing side
-            10, 12, 11,  // Right side
-            13, 15, 14   // Facing side
-        };
-
         // Position of 2 objects
-        Transform obj_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(1.0f)};
-        Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+        Transform car_transform{glm::vec3(-1.0, 0.0, 0.0), glm::quat(glm::vec3(0.0f, glm::pi<float>(), 0.0f)), glm::vec3(1.0f)};
+        Transform vikingroom_transform{glm::vec3(2.0, 0.0, 0.0), glm::quat(glm::vec3(-glm::pi<float>() / 2, glm::pi<float>(), 0.0f)),
+                                       glm::vec3(5.0f)};
+        Transform light_transform{glm::vec3(0.0f, 2.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
 
         // load textures
         std::shared_ptr<Texture> colormaps = std::make_shared<Rendervis::Texture>("resources/models/Textures/colormap.png");
-        std::shared_ptr<Texture> black = std::make_shared<Rendervis::Texture>("resources/texture/black.png");
+        std::shared_ptr<Texture> black = std::make_shared<Rendervis::Texture>("resources/textures/black.png");
 
-        std::vector<TextureMapping> texture_map = {TextureMapping{"colormaps", "material.diffuse"},
-                                                   TextureMapping{"black", "material.specular"}};
+        std::vector<TextureMapping> car_texturemap = {TextureMapping{"colormaps", "material.diffuse"},
+                                                      TextureMapping{"black", "material.specular"}};
+
+        std::shared_ptr<Texture> viking_room_tex = std::make_shared<Rendervis::Texture>("resources/models/Textures/viking_room.png");
+        std::vector<TextureMapping> viking_room_texturemap = {TextureMapping{"vikingroom", "material.diffuse"},
+                                                              TextureMapping{"black", "material.specular"}};
 
         // Material
         // use default shader, and texture maps given above
-        Material plane_material{"Default", texture_map, 256.0f};
+        Material car_material{"Default", car_texturemap, 256.0f};
+        Material vikingroom_material{"Default", viking_room_texturemap, 256.0f};
 
         // make entities
         std::shared_ptr<PointLight> light = std::make_shared<Rendervis::PointLight>(light_transform);
-        std::shared_ptr<Rendervis::Entity> entity =
-            std::make_shared<Rendervis::Entity>("resources/models/vehicle-speedster.obj", "resources/models/", obj_transform);
+        std::shared_ptr<Rendervis::Entity> car =
+            std::make_shared<Rendervis::Entity>("resources/models/vehicle-speedster.obj", "resources/models/", car_transform);
+
+        std::shared_ptr<Rendervis::Entity> vikingroom =
+            std::make_shared<Rendervis::Entity>("resources/models/viking-room.obj", "resources/models/", vikingroom_transform);
 
         // fix the hardcoded aspect ratio
         std::shared_ptr<Rendervis::Camera> main_camera =
@@ -117,18 +55,21 @@ namespace Rendervis {
 
         std::shared_ptr<Rendervis::Scene> scene = std::make_shared<Rendervis::Scene>();
 
-        entity->material_ = plane_material;
+        car->material_ = car_material;
+        vikingroom->material_ = vikingroom_material;
 
         scene->SetMainCamera(main_camera);
 
         scene->AddShader(object_shader, "Default");
         scene->AddShader(light_shader, "LightShader");
 
-        scene->AddEntity(entity, "car");
+        scene->AddEntity(car, "car");
+        scene->AddEntity(vikingroom, "vikingroom");
         scene->AddLight(light);
 
         scene->AddTexture(colormaps, "colormaps");
         scene->AddTexture(black, "black");
+        scene->AddTexture(viking_room_tex, "vikingroom");
 
         return scene;
     }
@@ -261,7 +202,7 @@ namespace Rendervis {
 
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_MULTISAMPLE);
-        glDebugMessageCallback(glDebugOutput, 0);
+        // glDebugMessageCallback(glDebugOutput, 0);
 
         SDL_GL_SetSwapInterval(1);
 
