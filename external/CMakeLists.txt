@@ -18,6 +18,13 @@ target_include_directories(stb_image PUBLIC ${STB_PATH}/include/)
 
 add_subdirectory(glm)
 
+# setup tinyobjloader
+
+set(TOBJ_PATH ${CMAKE_SOURCE_DIR}/external/tinyobjloader)
+add_library(tinyobjloader ${TOBJ_PATH}/tiny_obj_loader.cc)
+target_include_directories(tinyobjloader PUBLIC ${TOBJ_PATH}/include/)
+
+
 # setup IMGUI
 
 set(IMGUI_PATH ${CMAKE_SOURCE_DIR}/external/imgui)

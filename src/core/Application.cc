@@ -10,6 +10,7 @@
 #include "renderer/Entity.hpp"
 #include "renderer/Material.hpp"
 #include "renderer/Shader.hpp"
+#include "tiny_obj_loader.h"
 
 namespace Rendervis {
     std::shared_ptr<Scene> CreateExampleScene() {
@@ -18,114 +19,57 @@ namespace Rendervis {
         std::shared_ptr<Shader> light_shader =
             std::make_shared<Rendervis::Shader>("resources/shaders/lightVert.glsl", "resources/shaders/lightFrag.glsl");
 
-        // Vertices coordinates
-        std::vector<GLfloat> plane_vertices{//     COORDINATES     /        COLORS        /    TexCoord    /       NORMALS     //
-                                            -1.0f, 0.0f, 1.0f,  0.18f, 0.18f, 0.24f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-                                            -1.0f, 0.0f, -1.0f, 0.18f, 0.18f, 0.24f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                                            1.0f,  0.0f, -1.0f, 0.18f, 0.18f, 0.24f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                                            1.0f,  0.0f, 1.0f,  0.18f, 0.18f, 0.24f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-
-        // Indices for vertices order
-        std::vector<GLint> plane_indices{0, 1, 2, 0, 2, 3};
-
-        std::vector<GLfloat> cube_vertices{
-            -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 0.0f,
-            0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f,
-            -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f, 0.0f,
-
-            -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-            -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-
-            -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, -1.0f, 0.0f,  0.0f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f, -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  0.0f, 1.0f,
-            -0.5f, -0.5f, 0.5f,  -1.0f, 0.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f, 0.0f,
-
-            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-            0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-            0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  1.0f, 1.0f,
-            0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  1.0f, 0.0f,
-            -0.5f, -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f, 1.0f,
-
-            -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-            -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f};
-
-        std::vector<GLint> cube_indices{0, 1, 2, 0, 2, 3};
-
-        // Vertices coordinates
-        std::vector<GLfloat> pyramid_vertices{
-            //     COORDINATES     /        COLORS          /    TexCoord   / NORMALS //
-            -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-            -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 5.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-            0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 5.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-            0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f,  -1.0f, 0.0f,  // Bottom side
-
-            -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f, -0.8f, 0.5f,  0.0f,  // Left Side
-            -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, -0.8f, 0.5f,  0.0f,  // Left Side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, -0.8f, 0.5f,  0.0f,  // Left Side
-
-            -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f,  0.5f,  -0.8f,  // Non-facing side
-            0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f,  0.5f,  -0.8f,  // Non-facing side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.0f,  0.5f,  -0.8f,  // Non-facing side
-
-            0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.8f,  0.5f,  0.0f,  // Right side
-            0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.8f,  0.5f,  0.0f,  // Right side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.8f,  0.5f,  0.0f,  // Right side
-
-            0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f,  0.5f,  0.8f,  // Facing side
-            -0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f,  0.5f,  0.8f,  // Facing side
-            0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.0f,  0.5f,  0.8f   // Facing side
-        };
-
-        // Indices for vertices order
-        std::vector<GLint> pyramid_indices{
-            0,  1,  2,   // Bottom side
-            0,  2,  3,   // Bottom side
-            4,  6,  5,   // Left side
-            7,  9,  8,   // Non-facing side
-            10, 12, 11,  // Right side
-            13, 15, 14   // Facing side
-        };
-
         // Position of 2 objects
-        Transform plane_transform{glm::vec3(0.0, 0.0, 0.0), glm::identity<glm::quat>(), glm::vec3(5.0f)};
-        Transform light_transform{glm::vec3(0.0f, 10.0f, -10.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
+        Transform car_transform{glm::vec3(-1.0, 0.0, 0.0), glm::quat(glm::vec3(0.0f, glm::pi<float>(), 0.0f)), glm::vec3(1.0f)};
+        Transform vikingroom_transform{glm::vec3(2.0, 0.0, 0.0), glm::quat(glm::vec3(-glm::pi<float>() / 2, glm::pi<float>(), 0.0f)),
+                                       glm::vec3(5.0f)};
+        Transform light_transform{glm::vec3(0.0f, 2.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(1.0f)};
 
         // load textures
-        std::shared_ptr<Texture> plane_texture = std::make_shared<Rendervis::Texture>("resources/textures/container.png");
-        std::shared_ptr<Texture> plane_specular = std::make_shared<Rendervis::Texture>("resources/textures/container_specular.png");
+        std::shared_ptr<Texture> colormaps = std::make_shared<Rendervis::Texture>("resources/models/Textures/colormap.png");
+        std::shared_ptr<Texture> black = std::make_shared<Rendervis::Texture>("resources/textures/black.png");
 
-        std::vector<TextureMapping> plane_texture_map = {TextureMapping{"plane_texture", "material.diffuse"},
-                                                         TextureMapping{"plane_specular", "material.specular"}};
+        std::vector<TextureMapping> car_texturemap = {TextureMapping{"colormaps", "material.diffuse"},
+                                                      TextureMapping{"black", "material.specular"}};
+
+        std::shared_ptr<Texture> viking_room_tex = std::make_shared<Rendervis::Texture>("resources/models/Textures/viking_room.png");
+        std::vector<TextureMapping> viking_room_texturemap = {TextureMapping{"vikingroom", "material.diffuse"},
+                                                              TextureMapping{"black", "material.specular"}};
 
         // Material
         // use default shader, and texture maps given above
-        Material plane_material{"Default", plane_texture_map, 256.0f};
+        Material car_material{"Default", car_texturemap, 256.0f};
+        Material vikingroom_material{"Default", viking_room_texturemap, 256.0f};
 
         // make entities
-        std::shared_ptr<Entity> plane =
-            std::make_shared<Rendervis::Entity>(plane_vertices, plane_indices, plane_transform, plane_material);
-        // std::shared_ptr<Entity> light = std::make_shared<Rendervis::Entity>(pyramid_vertices, pyramid_indices, light_transform);
         std::shared_ptr<PointLight> light = std::make_shared<Rendervis::PointLight>(light_transform);
+        std::shared_ptr<Rendervis::Entity> car =
+            std::make_shared<Rendervis::Entity>("resources/models/vehicle-speedster.obj", "resources/models/", car_transform);
+
+        std::shared_ptr<Rendervis::Entity> vikingroom =
+            std::make_shared<Rendervis::Entity>("resources/models/viking-room.obj", "resources/models/", vikingroom_transform);
 
         // fix the hardcoded aspect ratio
         std::shared_ptr<Rendervis::Camera> main_camera =
             std::make_shared<Rendervis::Camera>(glm::vec3(.0, 2.0, 5.0), (float)1920 / 1080, 0.1f, 100.0f, glm::radians(45.0f));
 
         std::shared_ptr<Rendervis::Scene> scene = std::make_shared<Rendervis::Scene>();
+
+        car->material_ = car_material;
+        vikingroom->material_ = vikingroom_material;
+
         scene->SetMainCamera(main_camera);
 
         scene->AddShader(object_shader, "Default");
         scene->AddShader(light_shader, "LightShader");
 
-        scene->AddEntity(plane, "plane");
+        scene->AddEntity(car, "car");
+        scene->AddEntity(vikingroom, "vikingroom");
         scene->AddLight(light);
 
-        scene->AddTexture(plane_texture, "plane_texture");
-        scene->AddTexture(plane_specular, "plane_specular");
+        scene->AddTexture(colormaps, "colormaps");
+        scene->AddTexture(black, "black");
+        scene->AddTexture(viking_room_tex, "vikingroom");
 
         return scene;
     }
@@ -258,7 +202,7 @@ namespace Rendervis {
 
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_MULTISAMPLE);
-        glDebugMessageCallback(glDebugOutput, 0);
+        // glDebugMessageCallback(glDebugOutput, 0);
 
         SDL_GL_SetSwapInterval(1);
 
@@ -314,8 +258,11 @@ namespace Rendervis {
         static int counter = 0;
         ImGui::Begin("Debug Window");  // Create a window called "Hello, world!" and append into it.
         if (ImGui::CollapsingHeader("Scene Elements")) {
-            ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
-            ImGui::SliderFloat3("LightPositon", glm::value_ptr(active_scene_->GetLight(0)->transform.position), -10.0f, 10.0f);
+            // ImGui::Text("Light Transform");  // Display some text (you can use a format strings too)
+            ImGui::SliderFloat3("Light Position", glm::value_ptr(active_scene_->GetLight(0)->transform.position), -10.0f, 10.0f);
+            ImGui::ColorPicker3("Light Color", glm::value_ptr(active_scene_->GetLight(0)->color));
+
+            ImGui::SliderFloat3("ObjectPosition", glm::value_ptr(active_scene_->GetEntity("car")->transform_.position), -10.0f, 10.0f);
         }
         if (ImGui::CollapsingHeader("Performance")) {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);

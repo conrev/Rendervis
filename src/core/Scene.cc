@@ -81,14 +81,29 @@ namespace Rendervis {
         //     shader->SetUniformVec3("viewPosition", main_camera_->Position());
         // }
 
+        // for (auto& mesh : test_model_->meshes_) {
+        //     // std::cout << test_model_->shaders_to_use_ << std::endl;
+        //     std::shared_ptr<Shader> entity_shader = shader_library_[test_model_->shaders_to_use_];
+        //     entity_shader->Bind();
+        //     entity_shader->SetUniformMat4("viewMatrix", main_camera_->GetViewMatrix());
+        //     entity_shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
+        //     entity_shader->SetUniformVec3("lightColor", lights_[0]->color);
+        //     entity_shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
+        //     entity_shader->SetUniformVec3("viewPosition", main_camera_->Position());
+        //     entity_shader->SetUniformMat4("transformMatrix", glm::mat4x4(1.0f));
+
+        //     mesh.Draw();
+        // }
+
         for (const auto& [_, entity] : entities_) {
             // set the shader uniform to entity-specific values
-            std::shared_ptr<Shader> entity_shader = shader_library_[entity->material_.shader_name];
+            std::shared_ptr<Shader> entity_shader = shader_library_["Default"];
             entity_shader->Bind();
             entity_shader->SetUniformMat4("viewMatrix", main_camera_->GetViewMatrix());
             entity_shader->SetUniformMat4("projectionMatrix", main_camera_->GetProjectionMatrix());
             entity_shader->SetUniformVec3("lightColor", lights_[0]->color);
             entity_shader->SetUniformVec3("lightPosition", lights_[0]->transform.position);
+
             entity_shader->SetUniformVec3("viewPosition", main_camera_->Position());
             entity_shader->SetUniformMat4("transformMatrix", entity->transform_.GetTransformationMatrix());
 
@@ -100,7 +115,6 @@ namespace Rendervis {
                 glActiveTexture(GL_TEXTURE0 + i);
                 texture->Bind();
             }
-            // invoke the draw call
             entity->Draw();
         }
     }
