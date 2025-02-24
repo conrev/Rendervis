@@ -2,9 +2,22 @@
 
 Rendervis is a minimalistic 3D renderer made using OpenGL and SDL2, written in C++. It is primarily designed to visualize results from physics-based animation algorithms and physics engines. It is cross-platform, self-contained and ready to go with minimal setup.
 
+![image](https://github.com/user-attachments/assets/f4619bcd-88ba-44f2-a297-9b713f3d7d6a)
+
 ## Features
 
-TODO
+- Phong Shading with Point Lights
+- Model loading for `.obj` files
+- ImGUI-based debug interface
+
+## External Dependencies (Included in the repo)
+
+- `SDL2` for Windowing
+- `DearImGUI` (OpenGL+SDL2 Bindings) for UI
+- `GLAD`
+- `tinyobjloader` for obj file parsing
+- `stb_image` for .jpg or .png file parsing
+- `glm` for vector and matrix math
 
 ## Installation
 
