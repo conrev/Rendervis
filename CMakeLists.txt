@@ -31,7 +31,7 @@ add_custom_target(copy_resource ALL
                 ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
             COMMENT "Copying resources")
 
-target_link_libraries(${PROJECT_NAME} glad stb_image glm::glm imgui tinyobjloader)
+target_link_libraries(${PROJECT_NAME} PUBLIC glad stb_image glm::glm imgui tinyobjloader SDL2::SDL2main SDL2::SDL2-static)
 
 target_include_directories(${PROJECT_NAME}
 PRIVATE  

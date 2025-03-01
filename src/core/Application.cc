@@ -303,7 +303,6 @@ namespace Rendervis {
         }
 
         uint8_t const *keys = SDL_GetKeyboardState(nullptr);
-        float xDelta = 0, yDelta = 0;
         if (keys[SDL_SCANCODE_W] == 1) camera_delta.x += 1.0f;
         if (keys[SDL_SCANCODE_S] == 1) camera_delta.x -= 1.0f;
         if (keys[SDL_SCANCODE_A] == 1) camera_delta.y -= 1.0f;

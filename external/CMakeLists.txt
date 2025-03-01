@@ -40,4 +40,4 @@ add_library(imgui
     )
 
 target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends/)
-target_link_libraries(imgui PUBLIC SDL2::SDL2)
+target_link_libraries(imgui PUBLIC SDL2::SDL2-static)

@@ -1,6 +1,6 @@
 #include "core/Application.hpp"
 
-int main(int argv, char **args) {
+int main(int argc, char *argv[]) {
     Rendervis::AppProperties prop;
     prop.window_name = "Rendervis App";
     prop.window_width = 1920;
